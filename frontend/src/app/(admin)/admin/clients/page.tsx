@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useClients, useDeleteClient } from '../../../../hooks/useClients'
 import ClientForm from './ClientForm'
 import type { Client } from '../../../../types'
@@ -13,7 +12,6 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default function ClientsPage() {
-  const router                    = useRouter()
   const { data: clients = [], isLoading } = useClients()
   const deleteClient              = useDeleteClient()
   const [showForm, setShowForm]   = useState(false)
@@ -34,164 +32,156 @@ export default function ClientsPage() {
   }
 
   return (
-    <main className="grid-bg min-h-screen p-8 relative">
-      <div className="relative z-10 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
 
-        {/* ── Header ──────────────────────────────────────────── */}
-        <div className="flex justify-between items-start mb-8">
-          <div>
-            <p className="section-tag">MÒDUL 2</p>
-            <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">Clients</h1>
-            {!isLoading && (
-              <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">
-                {clients.length} client{clients.length !== 1 ? 's' : ''} registrat{clients.length !== 1 ? 's' : ''}
-              </p>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <button className="btn-outline text-xs" onClick={() => router.push('/admin/dashboard')}>
-              ← DASHBOARD
-            </button>
-            <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
-              + NOU CLIENT
-            </button>
-          </div>
+      {/* ── Header ──────────────────────────────────────────── */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <p className="section-tag">MÒDUL 2</p>
+          <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">Clients</h1>
+          {!isLoading && (
+            <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">
+              {clients.length} client{clients.length !== 1 ? 's' : ''} registrat{clients.length !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
-
-        {/* ── Contingut ───────────────────────────────────────── */}
-        {isLoading ? (
-          <div className="bg-[var(--bg-2)] border border-[var(--border)] p-16 text-center">
-            <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">
-              Carregant clients...
-            </p>
-          </div>
-        ) : clients.length === 0 ? (
-          <div className="alert-warning p-8 text-center">
-            <p className="font-mono text-[11px] tracking-[4px] text-[#FF6B00] uppercase mb-3">Sense clients</p>
-            <p className="font-rajdhani text-[var(--text)] mb-5">
-              Crea el primer client amb el botó "+ NOU CLIENT".
-            </p>
-            <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
-              + NOU CLIENT
-            </button>
-          </div>
-        ) : (
-          <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
-            {/* Capçalera taula */}
-            <div className="grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
-              {['EMPRESA / CONTACTE', 'SUBSCRIPCIÓ', 'SERVEIS', 'DOMINI', 'USU.', 'ACCIONS'].map(h => (
-                <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
-              ))}
-            </div>
-
-            {/* Files */}
-            {clients.map((client, i) => {
-              const activeSub = client.subscriptions.find(s => s.status === 'ACTIVE')
-              const extras    = activeSub?.services.filter(s => s.isExtra) ?? []
-              return (
-                <div
-                  key={client.id}
-                  className={`grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_auto] gap-4 px-5 py-4 items-center
-                    hover:bg-[var(--bg-1)] transition-colors
-                    ${i < clients.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
-                >
-                  {/* Empresa */}
-                  <div>
-                    <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">
-                      {client.companyName}
-                    </p>
-                    <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">{client.contactEmail}</p>
-                    {client.contactName !== client.companyName && (
-                      <p className="font-rajdhani text-[12px] text-[var(--text-muted)]">{client.contactName}</p>
-                    )}
-                  </div>
-
-                  {/* Subscripció */}
-                  <div>
-                    {activeSub ? (
-                      <>
-                        <span className={`font-mono text-[9px] tracking-widest px-2 py-0.5 border ${
-                          STATUS_COLORS[activeSub.status] ?? STATUS_COLORS.EXPIRED
-                        }`}>
-                          {activeSub.status}
-                        </span>
-                        <div className="mt-1.5">
-                          {activeSub.isCustom ? (
-                            <span className="font-mono text-[10px] text-[#FF6B00]">Personalitzat</span>
-                          ) : (
-                            <span className="font-rajdhani text-sm text-[var(--text)]">{activeSub.plan?.name}</span>
-                          )}
-                        </div>
-                        {activeSub.priceMonthly > 0 && (
-                          <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">
-                            {activeSub.priceMonthly}€/mes
-                            {activeSub.priceSetup > 0 && (
-                              <span className="text-[#FF6B00]"> · {activeSub.priceSetup}€ setup</span>
-                            )}
-                          </p>
-                        )}
-                      </>
-                    ) : (
-                      <span className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest">— SENSE PLA</span>
-                    )}
-                  </div>
-
-                  {/* Serveis */}
-                  <div className="flex flex-wrap gap-1">
-                    {activeSub && activeSub.services.length > 0 ? (
-                      <>
-                        {activeSub.services.slice(0, 3).map(ss => (
-                          <span key={ss.serviceId} className={`font-mono text-[8px] tracking-wider px-1.5 py-0.5 border ${
-                            ss.isExtra
-                              ? 'text-[#FF6B00] border-[#FF6B00]/40'
-                              : 'text-[var(--text-muted)] border-[var(--border)]'
-                          }`}>
-                            {ss.service.name.split(' ').slice(0, 2).join(' ')}
-                            {ss.isExtra && ' +'}
-                          </span>
-                        ))}
-                        {activeSub.services.length > 3 && (
-                          <span className="font-mono text-[8px] text-[var(--text-muted)] px-1.5 py-0.5 border border-[var(--border)]">
-                            +{activeSub.services.length - 3}
-                          </span>
-                        )}
-                      </>
-                    ) : (
-                      <span className="font-mono text-[10px] text-[var(--text-muted)]">—</span>
-                    )}
-                  </div>
-
-                  {/* Domini */}
-                  <p className="font-mono text-[10px] text-[var(--text-muted)] truncate">
-                    {client.domain || '—'}
-                  </p>
-
-                  {/* Usuaris */}
-                  <p className="font-mono text-[11px] text-[var(--text-muted)] text-center">
-                    {client._count?.users ?? 0}
-                  </p>
-
-                  {/* Accions */}
-                  <div className="flex gap-2 justify-end">
-                    <button
-                      className="btn-outline text-[9px] px-3 py-1.5"
-                      onClick={() => setEditClient(client)}
-                    >
-                      EDITAR
-                    </button>
-                    <button
-                      className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1"
-                      onClick={() => handleDelete(client.id, client.companyName)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        )}
+        <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
+          + NOU CLIENT
+        </button>
       </div>
-    </main>
+
+      {/* ── Contingut ───────────────────────────────────────── */}
+      {isLoading ? (
+        <div className="bg-[var(--bg-2)] border border-[var(--border)] p-16 text-center">
+          <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">
+            Carregant clients...
+          </p>
+        </div>
+      ) : clients.length === 0 ? (
+        <div className="alert-warning p-8 text-center">
+          <p className="font-mono text-[11px] tracking-[4px] text-[#FF6B00] uppercase mb-3">Sense clients</p>
+          <p className="font-rajdhani text-[var(--text)] mb-5">
+            Crea el primer client amb el botó "+ NOU CLIENT".
+          </p>
+          <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
+            + NOU CLIENT
+          </button>
+        </div>
+      ) : (
+        <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
+          {/* Capçalera taula */}
+          <div className="grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
+            {['EMPRESA / CONTACTE', 'SUBSCRIPCIÓ', 'SERVEIS', 'DOMINI', 'USU.', 'ACCIONS'].map(h => (
+              <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
+            ))}
+          </div>
+
+          {/* Files */}
+          {clients.map((client, i) => {
+            const activeSub = client.subscriptions.find(s => s.status === 'ACTIVE')
+            return (
+              <div
+                key={client.id}
+                className={`grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_auto] gap-4 px-5 py-4 items-center
+                  hover:bg-[var(--bg-1)] transition-colors
+                  ${i < clients.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
+              >
+                {/* Empresa */}
+                <div>
+                  <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">
+                    {client.companyName}
+                  </p>
+                  <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">{client.contactEmail}</p>
+                  {client.contactName !== client.companyName && (
+                    <p className="font-rajdhani text-[12px] text-[var(--text-muted)]">{client.contactName}</p>
+                  )}
+                </div>
+
+                {/* Subscripció */}
+                <div>
+                  {activeSub ? (
+                    <>
+                      <span className={`font-mono text-[9px] tracking-widest px-2 py-0.5 border ${
+                        STATUS_COLORS[activeSub.status] ?? STATUS_COLORS.EXPIRED
+                      }`}>
+                        {activeSub.status}
+                      </span>
+                      <div className="mt-1.5">
+                        {activeSub.isCustom ? (
+                          <span className="font-mono text-[10px] text-[#FF6B00]">Personalitzat</span>
+                        ) : (
+                          <span className="font-rajdhani text-sm text-[var(--text)]">{activeSub.plan?.name}</span>
+                        )}
+                      </div>
+                      {activeSub.priceMonthly > 0 && (
+                        <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">
+                          {activeSub.priceMonthly}€/mes
+                          {activeSub.priceSetup > 0 && (
+                            <span className="text-[#FF6B00]"> · {activeSub.priceSetup}€ setup</span>
+                          )}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <span className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest">— SENSE PLA</span>
+                  )}
+                </div>
+
+                {/* Serveis */}
+                <div className="flex flex-wrap gap-1">
+                  {activeSub && activeSub.services.length > 0 ? (
+                    <>
+                      {activeSub.services.slice(0, 3).map(ss => (
+                        <span key={ss.serviceId} className={`font-mono text-[8px] tracking-wider px-1.5 py-0.5 border ${
+                          ss.isExtra
+                            ? 'text-[#FF6B00] border-[#FF6B00]/40'
+                            : 'text-[var(--text-muted)] border-[var(--border)]'
+                        }`}>
+                          {ss.service.name.split(' ').slice(0, 2).join(' ')}
+                          {ss.isExtra && ' +'}
+                        </span>
+                      ))}
+                      {activeSub.services.length > 3 && (
+                        <span className="font-mono text-[8px] text-[var(--text-muted)] px-1.5 py-0.5 border border-[var(--border)]">
+                          +{activeSub.services.length - 3}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="font-mono text-[10px] text-[var(--text-muted)]">—</span>
+                  )}
+                </div>
+
+                {/* Domini */}
+                <p className="font-mono text-[10px] text-[var(--text-muted)] truncate">
+                  {client.domain || '—'}
+                </p>
+
+                {/* Usuaris */}
+                <p className="font-mono text-[11px] text-[var(--text-muted)] text-center">
+                  {client._count?.users ?? 0}
+                </p>
+
+                {/* Accions */}
+                <div className="flex gap-2 justify-end">
+                  <button
+                    className="btn-outline text-[9px] px-3 py-1.5"
+                    onClick={() => setEditClient(client)}
+                  >
+                    EDITAR
+                  </button>
+                  <button
+                    className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1"
+                    onClick={() => handleDelete(client.id, client.companyName)}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }

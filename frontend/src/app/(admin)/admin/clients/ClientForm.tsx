@@ -145,8 +145,7 @@ export default function ClientForm({ client, onClose }: Props) {
   }
 
   return (
-    <main className="grid-bg min-h-screen p-8 relative">
-      <div className="relative z-10 max-w-3xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto">
 
         {/* ── Header ──────────────────────────────────────────── */}
         <div className="flex justify-between items-start mb-8">
@@ -156,7 +155,7 @@ export default function ClientForm({ client, onClose }: Props) {
               {isEdit ? client.companyName : 'Alta de client'}
             </h1>
           </div>
-          <button className="btn-outline text-xs" onClick={onClose}>← ENRERE</button>
+          <button className="btn-outline text-xs" onClick={onClose}>CANCEL·LAR</button>
         </div>
 
         {submitError && (
@@ -388,8 +387,7 @@ export default function ClientForm({ client, onClose }: Props) {
           </div>
 
         </form>
-      </div>
-    </main>
+    </div>
   )
 }
 

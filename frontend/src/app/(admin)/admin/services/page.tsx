@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -113,131 +112,123 @@ function ServiceForm({ service, onClose }: { service?: Service; onClose: () => v
 }
 
 export default function ServicesPage() {
-  const router = useRouter()
   const { data: services = [], isLoading } = useServices()
   const deleteService = useDeleteService()
   const [showForm, setShowForm]   = useState(false)
   const [editService, setEdit]    = useState<Service | undefined>()
 
   return (
-    <main className="grid-bg min-h-screen p-8 relative">
-      <div className="relative z-10 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto">
 
-        {/* ── Header ──────────────────────────────────────────── */}
-        <div className="flex justify-between items-start mb-8">
-          <div>
-            <p className="section-tag">CONFIGURACIÓ</p>
-            <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">Serveis</h1>
-            {!isLoading && (
-              <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">
-                {services.length} servei{services.length !== 1 ? 's' : ''} al catàleg
-              </p>
-            )}
-          </div>
-          <div className="flex gap-3">
-            <button className="btn-outline text-xs" onClick={() => router.push('/admin/dashboard')}>
-              ← DASHBOARD
-            </button>
-            <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
-              + NOU SERVEI
-            </button>
-          </div>
-        </div>
-
-        {/* ── Contingut ───────────────────────────────────────── */}
-        {isLoading ? (
-          <div className="bg-[var(--bg-2)] border border-[var(--border)] p-16 text-center">
-            <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">
-              Carregant serveis...
+      {/* ── Header ──────────────────────────────────────────── */}
+      <div className="flex justify-between items-start mb-8">
+        <div>
+          <p className="section-tag">CONFIGURACIÓ</p>
+          <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">Serveis</h1>
+          {!isLoading && (
+            <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">
+              {services.length} servei{services.length !== 1 ? 's' : ''} al catàleg
             </p>
-          </div>
-        ) : (
-          <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
-
-            {/* Capçalera */}
-            <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
-              {['SERVEI', 'SETUP', 'MENSUAL', 'PLANS', 'ACCIONS'].map(h => (
-                <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
-              ))}
-            </div>
-
-            {services.length === 0 ? (
-              <div className="p-12 text-center">
-                <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-widest mb-4">CATÀLEG BUIT</p>
-                <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
-                  + NOU SERVEI
-                </button>
-              </div>
-            ) : (
-              services.map((s, i) => {
-                const planSlugs = (s.planServices ?? []).map(ps => ps.plan.slug)
-                return (
-                  <div
-                    key={s.id}
-                    className={`grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-4 items-center
-                      hover:bg-[var(--bg-1)] transition-colors
-                      ${i < services.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
-                  >
-                    {/* Nom */}
-                    <div>
-                      <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">{s.name}</p>
-                      <p className="font-mono text-[9px] text-[var(--text-muted)] mt-0.5">{s.slug}</p>
-                      {s.description && (
-                        <p className="font-rajdhani text-[12px] text-[var(--text-muted)] mt-0.5 line-clamp-1">{s.description}</p>
-                      )}
-                    </div>
-
-                    {/* Setup */}
-                    <p className="font-mono text-[11px] text-[var(--text)]">
-                      {s.setupPrice > 0 ? `${s.setupPrice}€` : <span className="text-[var(--text-muted)]">—</span>}
-                    </p>
-
-                    {/* Mensual */}
-                    <p className="font-mono text-[11px] text-[var(--text)]">
-                      {s.monthlyPrice > 0 ? `${s.monthlyPrice}€` : <span className="text-[var(--text-muted)]">—</span>}
-                    </p>
-
-                    {/* Plans */}
-                    <div className="flex flex-wrap gap-1">
-                      {planSlugs.length === 0 ? (
-                        <span className="font-mono text-[9px] text-[var(--text-muted)]">cap pla</span>
-                      ) : planSlugs.map(slug => {
-                        const style = PLAN_STYLES[slug]
-                        if (!style) return null
-                        return (
-                          <span
-                            key={slug}
-                            className={`font-mono text-[8px] tracking-wider px-2 py-0.5 border ${style.bg}`}
-                            style={{ color: style.accent, borderColor: `${style.accent}40` }}
-                          >
-                            {style.label.slice(0, 3).toUpperCase()}
-                          </span>
-                        )
-                      })}
-                    </div>
-
-                    {/* Accions */}
-                    <div className="flex gap-2 justify-end">
-                      <button
-                        className="btn-outline text-[9px] px-3 py-1.5"
-                        onClick={() => setEdit(s)}
-                      >
-                        EDITAR
-                      </button>
-                      <button
-                        className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1"
-                        onClick={() => deleteService.mutate(s.id)}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  </div>
-                )
-              })
-            )}
-          </div>
-        )}
+          )}
+        </div>
+        <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
+          + NOU SERVEI
+        </button>
       </div>
+
+      {/* ── Contingut ───────────────────────────────────────── */}
+      {isLoading ? (
+        <div className="bg-[var(--bg-2)] border border-[var(--border)] p-16 text-center">
+          <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">
+            Carregant serveis...
+          </p>
+        </div>
+      ) : (
+        <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
+
+          {/* Capçalera */}
+          <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
+            {['SERVEI', 'SETUP', 'MENSUAL', 'PLANS', 'ACCIONS'].map(h => (
+              <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
+            ))}
+          </div>
+
+          {services.length === 0 ? (
+            <div className="p-12 text-center">
+              <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-widest mb-4">CATÀLEG BUIT</p>
+              <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
+                + NOU SERVEI
+              </button>
+            </div>
+          ) : (
+            services.map((s, i) => {
+              const planSlugs = (s.planServices ?? []).map(ps => ps.plan.slug)
+              return (
+                <div
+                  key={s.id}
+                  className={`grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-4 items-center
+                    hover:bg-[var(--bg-1)] transition-colors
+                    ${i < services.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
+                >
+                  {/* Nom */}
+                  <div>
+                    <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">{s.name}</p>
+                    <p className="font-mono text-[9px] text-[var(--text-muted)] mt-0.5">{s.slug}</p>
+                    {s.description && (
+                      <p className="font-rajdhani text-[12px] text-[var(--text-muted)] mt-0.5 line-clamp-1">{s.description}</p>
+                    )}
+                  </div>
+
+                  {/* Setup */}
+                  <p className="font-mono text-[11px] text-[var(--text)]">
+                    {s.setupPrice > 0 ? `${s.setupPrice}€` : <span className="text-[var(--text-muted)]">—</span>}
+                  </p>
+
+                  {/* Mensual */}
+                  <p className="font-mono text-[11px] text-[var(--text)]">
+                    {s.monthlyPrice > 0 ? `${s.monthlyPrice}€` : <span className="text-[var(--text-muted)]">—</span>}
+                  </p>
+
+                  {/* Plans */}
+                  <div className="flex flex-wrap gap-1">
+                    {planSlugs.length === 0 ? (
+                      <span className="font-mono text-[9px] text-[var(--text-muted)]">cap pla</span>
+                    ) : planSlugs.map(slug => {
+                      const style = PLAN_STYLES[slug]
+                      if (!style) return null
+                      return (
+                        <span
+                          key={slug}
+                          className={`font-mono text-[8px] tracking-wider px-2 py-0.5 border ${style.bg}`}
+                          style={{ color: style.accent, borderColor: `${style.accent}40` }}
+                        >
+                          {style.label.slice(0, 3).toUpperCase()}
+                        </span>
+                      )
+                    })}
+                  </div>
+
+                  {/* Accions */}
+                  <div className="flex gap-2 justify-end">
+                    <button
+                      className="btn-outline text-[9px] px-3 py-1.5"
+                      onClick={() => setEdit(s)}
+                    >
+                      EDITAR
+                    </button>
+                    <button
+                      className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1"
+                      onClick={() => deleteService.mutate(s.id)}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
 
       {(showForm || editService) && (
         <ServiceForm
@@ -245,6 +236,6 @@ export default function ServicesPage() {
           onClose={() => { setShowForm(false); setEdit(undefined) }}
         />
       )}
-    </main>
+    </div>
   )
 }
