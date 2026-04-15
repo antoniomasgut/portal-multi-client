@@ -92,6 +92,23 @@ model Plan {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Límits d'ús
+  maxConversations Int?
+  maxTokens        Int?
+  maxAutomations   Int?
+  maxIntegrations  Int?
+  maxRagDocuments  Int?
+
+  // Funcionalitats
+  hasLandingPro   Boolean @default(false)
+  hasCustomDomain Boolean @default(false)
+  hasRag          Boolean @default(false)
+  hasTelegram     Boolean @default(false)
+
+  // Preus excedents
+  extraConversationPrice Decimal @default(0.005) @db.Decimal(10, 4)
+  extraTokenPrice        Decimal @default(0.0001) @db.Decimal(10, 6)
+
   services      PlanService[]
   subscriptions Subscription[]
 
@@ -113,26 +130,37 @@ model PlanService {
 
 // ── Clients (empreses) ─────────────────────────────────────────────────
 model Client {
-  id           String    @id @default(uuid())
+  id           String       @id @default(uuid())
   companyName  String
   contactName  String
-  contactEmail String    @unique
+  contactEmail String       @unique
   contactPhone String?
   nif          String?
   address      String?
-  domain       String?   @unique
+  domain       String?      @unique
   logoUrl      String?
   notes        String?
+  status       ClientStatus @default(ACTIVE)
+  billingType  BillingType  @default(MONTHLY)
+  language     String       @default("ca")
+  referralCode String?      @unique
+  referredById String?
   deletedAt    DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 
+  referredBy    Client?       @relation("Referrals", fields: [referredById], references: [id])
+  referrals     Client[]      @relation("Referrals")
   users         User[]
   subscriptions Subscription[]
   auditLogs     AuditLog[]
+  usage         ClientUsage?
+  discounts     ClientDiscount[]
+  planHistory   PlanHistory[]
 
   @@index([contactEmail])
   @@index([domain])
+  @@index([referralCode])
   @@map("clients")
 }
 
@@ -175,6 +203,87 @@ model SubscriptionService {
   @@map("subscription_services")
 }
 
+// ── Ús del client (reinicia cada mes) ────────────────────────────────
+model ClientUsage {
+  id                String   @id @default(uuid())
+  clientId          String   @unique
+  conversationsUsed Int      @default(0)
+  tokensUsed        Int      @default(0)
+  automationsUsed   Int      @default(0)
+  ragDocsUsed       Int      @default(0)
+  periodStart       DateTime @default(now())
+  periodEnd         DateTime
+  updatedAt         DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@map("client_usage")
+}
+
+// ── Historial de plans ────────────────────────────────────────────────
+model PlanHistory {
+  id        String   @id @default(uuid())
+  clientId  String
+  planId    String?
+  planName  String
+  price     Decimal  @db.Decimal(10, 2)
+  reason    String?
+  changedAt DateTime @default(now())
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@map("plan_history")
+}
+
+// ── Polítiques de descompte ───────────────────────────────────────────
+model DiscountPolicy {
+  id             String       @id @default(uuid())
+  type           DiscountType @unique
+  isActive       Boolean      @default(true)
+  percentage     Decimal?     @db.Decimal(5, 2)
+  monthsFree     Int?
+  durationMonths Int?
+  description    String?
+  updatedBy      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("discount_policies")
+}
+
+// ── Descomptes aplicats a clients ─────────────────────────────────────
+model ClientDiscount {
+  id         String       @id @default(uuid())
+  clientId   String
+  type       DiscountType
+  percentage Decimal?     @db.Decimal(5, 2)
+  monthsFree Int?
+  appliedAt  DateTime     @default(now())
+  expiresAt  DateTime?
+  isActive   Boolean      @default(true)
+  reason     String?
+  appliedBy  String?
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@map("client_discounts")
+}
+
+// ── Política global de preus ──────────────────────────────────────────
+model PricingPolicy {
+  id                    String   @id @default(uuid())
+  minNoticeDays         Int      @default(30)
+  allowImmediateChange  Boolean  @default(false)
+  notifyClientsOnChange Boolean  @default(true)
+  updatedBy             String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("pricing_policies")
+}
+
 // ── Enums ─────────────────────────────────────────────────────────────
 enum Role {
   ADMIN
@@ -187,4 +296,23 @@ enum SubscriptionStatus {
   CANCELLED
   EXPIRED
   TRIAL
+}
+
+enum ClientStatus {
+  ACTIVE
+  SUSPENDED
+  CANCELLED
+}
+
+enum BillingType {
+  MONTHLY
+  ANNUAL
+}
+
+enum DiscountType {
+  NEW_CLIENT
+  ANNUAL_PAYMENT
+  REFERRAL_REFERRER
+  REFERRAL_NEW
+  MANUAL
 }

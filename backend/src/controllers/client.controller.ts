@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { clientService, planService } from '../services/client.service'
+import { z } from 'zod'
+import { clientService, planService, usageService, getPlanHistory as fetchPlanHistory } from '../services/client.service'
 import { createClientSchema, updateClientSchema, assignPlanSchema } from '../schemas/client'
 import { prisma } from '../db'
 
@@ -107,5 +108,40 @@ export const assignPlan = async (req: Request, res: Response, next: NextFunction
     })
 
     res.json({ success: true, message: 'Pla assignat', data: subscription })
+  } catch (err) { next(err) }
+}
+
+// ── Ús del client ────────────────────────────────────────────────────────
+export const getClientUsage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const usage = await usageService.getOrCreate(req.params.id)
+    res.json({ success: true, message: 'OK', data: usage })
+  } catch (err) { next(err) }
+}
+
+const updateUsageSchema = z.object({
+  conversationsUsed: z.number().int().min(0).optional(),
+  tokensUsed:        z.number().int().min(0).optional(),
+  automationsUsed:   z.number().int().min(0).optional(),
+  ragDocsUsed:       z.number().int().min(0).optional(),
+})
+
+export const updateClientUsage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const parsed = updateUsageSchema.safeParse(req.body)
+    if (!parsed.success) {
+      res.status(400).json({ success: false, message: 'Dades invàlides', data: parsed.error.flatten() })
+      return
+    }
+    const usage = await usageService.update(req.params.id, parsed.data)
+    res.json({ success: true, message: 'Ús actualitzat', data: usage })
+  } catch (err) { next(err) }
+}
+
+// ── Historial de plans ───────────────────────────────────────────────────
+export const getPlanHistoryCtrl = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const history = await fetchPlanHistory(req.params.id)
+    res.json({ success: true, message: 'OK', data: history })
   } catch (err) { next(err) }
 }

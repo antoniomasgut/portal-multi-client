@@ -8,6 +8,8 @@ import rateLimit from 'express-rate-limit'
 import authRouter     from './routes/auth'
 import clientsRouter  from './routes/clients'
 import servicesRouter from './routes/services'
+import plansRouter    from './routes/plans'
+import settingsRouter from './routes/settings'
 import { errorHandler } from './middleware/errorHandler'
 
 const app  = express()
@@ -47,6 +49,8 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth',     authRouter)
 app.use('/api/clients',  clientsRouter)
 app.use('/api/services', servicesRouter)
+app.use('/api/plans',    plansRouter)
+app.use('/api/settings', settingsRouter)
 // Pròxims mòduls:
 // app.use('/api/billing',  billingRouter)    // Mòdul 4
 

@@ -213,3 +213,50 @@ export const planService = {
     })
   },
 }
+
+// ── ClientUsage ──────────────────────────────────────────────────────────
+export const usageService = {
+  async getOrCreate(clientId: string) {
+    const existing = await prisma.clientUsage.findUnique({ where: { clientId } })
+    if (existing) return existing
+    const periodStart = new Date()
+    const periodEnd   = new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, 1)
+    return prisma.clientUsage.create({
+      data: { clientId, periodStart, periodEnd },
+    })
+  },
+
+  async update(clientId: string, data: Partial<{
+    conversationsUsed: number
+    tokensUsed:        number
+    automationsUsed:   number
+    ragDocsUsed:       number
+  }>) {
+    return prisma.clientUsage.upsert({
+      where:  { clientId },
+      update: data,
+      create: {
+        clientId,
+        periodStart: new Date(),
+        periodEnd:   new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
+        ...data,
+      },
+    })
+  },
+
+  async resetAll() {
+    const periodStart = new Date()
+    const periodEnd   = new Date(periodStart.getFullYear(), periodStart.getMonth() + 1, 1)
+    return prisma.clientUsage.updateMany({
+      data: { conversationsUsed: 0, tokensUsed: 0, automationsUsed: 0, ragDocsUsed: 0, periodStart, periodEnd },
+    })
+  },
+}
+
+// ── Historial de plans ───────────────────────────────────────────────────
+export async function getPlanHistory(clientId: string) {
+  return prisma.planHistory.findMany({
+    where:   { clientId },
+    orderBy: { changedAt: 'desc' },
+  })
+}

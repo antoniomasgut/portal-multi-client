@@ -47,6 +47,13 @@ export default function AdminDashboard() {
       active: true,
     },
     {
+      tag: 'CONFIGURACIÓ',
+      title: 'Configuració',
+      desc: 'Polítiques de descompte i de canvis de preu',
+      href: '/admin/settings',
+      active: true,
+    },
+    {
       tag: 'PRÒXIMAMENT',
       title: 'Facturació',
       desc: 'Generació de factures i seguiment de pagaments',
