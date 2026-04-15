@@ -46,11 +46,11 @@ export function useCreateClient() {
       contactName:  string
       contactEmail: string
       contactPhone?: string
-      nif?:         string
-      address?:     string
-      domain?:      string
-      notes?:       string
-      planId:       string
+      nif?:          string
+      address?:      string
+      domain?:       string
+      notes?:        string
+      planId?:       string
     }) => api.post('/api/clients', data).then(r => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
   })
@@ -59,7 +59,7 @@ export function useCreateClient() {
 export function useUpdateClient(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<Omit<Client, 'id' | 'createdAt' | 'subscriptions' | '_count'>>) =>
+    mutationFn: (data: Partial<Omit<Client, 'id' | 'createdAt' | 'subscriptions' | '_count'>> & { planId?: string }) =>
       api.patch(`/api/clients/${id}`, data).then(r => r.data.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['clients'] })

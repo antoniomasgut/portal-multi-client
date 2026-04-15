@@ -39,19 +39,21 @@ export const clientService = {
     address?: string
     domain?: string
     notes?: string
-    planId: string
+    planId?: string
   }) {
     const { planId, ...clientData } = data
     return prisma.client.create({
       data: {
         ...clientData,
-        subscriptions: {
-          create: {
-            planId,
-            status:   'ACTIVE',
-            renewsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        ...(planId && {
+          subscriptions: {
+            create: {
+              planId,
+              status:   'ACTIVE',
+              renewsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            },
           },
-        },
+        }),
       },
       include: {
         subscriptions: { include: { plan: true } },
@@ -68,10 +70,14 @@ export const clientService = {
     address: string
     domain: string
     notes: string
+    planId: string
   }>) {
+    const { planId, ...clientData } = data
+    if (planId) await clientService.assignPlan(id, planId)
     return prisma.client.update({
-      where: { id },
-      data,
+      where:   { id },
+      data:    clientData,
+      include: { subscriptions: { where: { status: 'ACTIVE' }, include: { plan: true } } },
     })
   },
 

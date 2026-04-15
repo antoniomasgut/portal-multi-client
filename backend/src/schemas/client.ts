@@ -9,10 +9,10 @@ export const createClientSchema = z.object({
   address:      z.string().optional(),
   domain:       z.string().optional(),
   notes:        z.string().optional(),
-  planId:       z.string().uuid(),
+  planId:       z.string().uuid().optional(),
 })
 
-export const updateClientSchema = createClientSchema.partial().omit({ planId: true })
+export const updateClientSchema = createClientSchema.partial()
 
 export const assignPlanSchema = z.object({
   planId: z.string().uuid(),
