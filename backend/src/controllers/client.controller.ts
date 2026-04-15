@@ -36,7 +36,7 @@ export const createClient = async (req: Request, res: Response, next: NextFuncti
 
     await prisma.auditLog.create({
       data: {
-        userId:     (req as any).user.id,
+        userId:     req.user!.userId,
         clientId:   client.id,
         action:     'CLIENT_CREATED',
         entityType: 'Client',
@@ -57,7 +57,7 @@ export const updateClient = async (req: Request, res: Response, next: NextFuncti
 
     await prisma.auditLog.create({
       data: {
-        userId:     (req as any).user.id,
+        userId:     req.user!.userId,
         clientId:   req.params.id,
         action:     'CLIENT_UPDATED',
         entityType: 'Client',
@@ -77,7 +77,7 @@ export const deleteClient = async (req: Request, res: Response, next: NextFuncti
 
     await prisma.auditLog.create({
       data: {
-        userId:     (req as any).user.id,
+        userId:     req.user!.userId,
         action:     'CLIENT_DELETED',
         entityType: 'Client',
         entityId:   req.params.id,
@@ -96,7 +96,7 @@ export const assignPlan = async (req: Request, res: Response, next: NextFunction
 
     await prisma.auditLog.create({
       data: {
-        userId:     (req as any).user.id,
+        userId:     req.user!.userId,
         clientId:   req.params.id,
         action:     'PLAN_ASSIGNED',
         entityType: 'Subscription',
