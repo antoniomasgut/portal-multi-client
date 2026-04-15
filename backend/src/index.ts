@@ -5,7 +5,8 @@ import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
 
-import authRouter from './routes/auth'
+import authRouter    from './routes/auth'
+import clientsRouter from './routes/clients'
 import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
@@ -38,10 +39,9 @@ app.get('/health', (_req, res) => {
 })
 
 // ── Rutes de l'API ──────────────────────────────────────────────────
-app.use('/api/auth', authRouter)
+app.use('/api/auth',    authRouter)
+app.use('/api/clients', clientsRouter)
 // Pròxims mòduls:
-// app.use('/api/clients',  clientsRouter)   // Mòdul 2
-// app.use('/api/plans',    plansRouter)      // Mòdul 2
 // app.use('/api/billing',  billingRouter)    // Mòdul 4
 
 // ── Middleware d'errors centralitzat ────────────────────────────────

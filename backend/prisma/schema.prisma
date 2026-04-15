@@ -19,8 +19,11 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
+  client    Client?   @relation(fields: [clientId], references: [id])
+
   @@index([email])
   @@index([role])
+  @@index([clientId])
   @@map("users")
 }
 
@@ -41,6 +44,7 @@ model MagicLinkToken {
 model AuditLog {
   id         String   @id @default(uuid())
   userId     String
+  clientId   String?
   action     String
   entityType String?
   entityId   String?
@@ -48,10 +52,78 @@ model AuditLog {
   ip         String?
   createdAt  DateTime @default(now())
 
+  client     Client?  @relation(fields: [clientId], references: [id])
+
   @@index([userId])
+  @@index([clientId])
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ── Plans de servei ───────────────────────────────────────────────────
+model Plan {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  priceMonthly Decimal @db.Decimal(10, 2)
+  maxDomains  Int      @default(1)
+  maxUsers    Int      @default(1)
+  features    Json     @default("[]")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  @@index([slug])
+  @@map("plans")
+}
+
+// ── Clients (empreses) ─────────────────────────────────────────────────
+model Client {
+  id            String    @id @default(uuid())
+  companyName   String
+  contactName   String
+  contactEmail  String    @unique
+  contactPhone  String?
+  nif           String?
+  address       String?
+  domain        String?   @unique
+  logoUrl       String?
+  notes         String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  users         User[]
+  subscriptions Subscription[]
+  auditLogs     AuditLog[]
+
+  @@index([contactEmail])
+  @@index([domain])
+  @@map("clients")
+}
+
+// ── Subscripcions ─────────────────────────────────────────────────────
+model Subscription {
+  id          String             @id @default(uuid())
+  clientId    String
+  planId      String
+  status      SubscriptionStatus @default(ACTIVE)
+  startDate   DateTime           @default(now())
+  endDate     DateTime?
+  renewsAt    DateTime?
+  cancelledAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+  plan   Plan   @relation(fields: [planId],   references: [id])
+
+  @@index([clientId])
+  @@index([status])
+  @@map("subscriptions")
 }
 
 // ── Enums ─────────────────────────────────────────────────────────────
@@ -59,4 +131,11 @@ enum Role {
   ADMIN
   CLIENT
   VISITOR
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
 }

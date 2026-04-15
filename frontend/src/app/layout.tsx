@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { Providers } from './providers'
 
 export const metadata: Metadata = {
   title: 'AMG Enginyeria Digital — Portal',
@@ -16,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="bg-dark-0 text-[#e0e0f0] font-rajdhani antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
