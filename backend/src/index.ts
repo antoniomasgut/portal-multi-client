@@ -16,7 +16,13 @@ const PORT = process.env.PORT || 4000
 // ── Middleware de seguretat ──────────────────────────────────────────
 app.use(helmet())
 app.use(cors({
-  origin:      process.env.BASE_URL || 'http://localhost:3000',
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true)
+    const isLocalhost = /^https?:\/\/localhost(:\d+)?$/.test(origin)
+    const isAllowed   = isLocalhost || origin === process.env.BASE_URL
+    if (isAllowed) cb(null, true)
+    else cb(new Error(`CORS: origin no permès: ${origin}`))
+  },
   credentials: true,
 }))
 app.use(express.json({ limit: '10mb' }))
