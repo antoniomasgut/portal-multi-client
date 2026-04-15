@@ -1,22 +1,27 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
 import dotenv from 'dotenv'
 
+import authRouter from './routes/auth'
+import { errorHandler } from './middleware/errorHandler'
+
 dotenv.config()
 
-const app = express()
+const app  = express()
 const PORT = process.env.PORT || 4000
 
 // ── Middleware de seguretat ──────────────────────────────────────────
 app.use(helmet())
 app.use(cors({
-  origin: process.env.BASE_URL || 'http://localhost:3000',
+  origin:      process.env.BASE_URL || 'http://localhost:3000',
   credentials: true,
 }))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 
 // Rate limiting global
 app.use(rateLimit({
@@ -24,7 +29,7 @@ app.use(rateLimit({
   max:      Number(process.env.RATE_LIMIT_MAX) || 100,
   standardHeaders: true,
   legacyHeaders:   false,
-  message: { success: false, message: 'Massa peticions. Torna a provar en un minut.' },
+  message: { success: false, message: 'Massa peticions. Torna-ho a provar en un minut.', data: null },
 }))
 
 // ── Health check ────────────────────────────────────────────────────
@@ -32,33 +37,19 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// ── Rutes de l'API ─────────────────────────────────────────────────
-// Les rutes s'afegiran mòdul a mòdul:
-// app.use('/api/auth',    authRouter)    // Mòdul 1
-// app.use('/api/clients', clientsRouter) // Mòdul 2
-// ...
+// ── Rutes de l'API ──────────────────────────────────────────────────
+app.use('/api/auth', authRouter)
+// Pròxims mòduls:
+// app.use('/api/clients',  clientsRouter)   // Mòdul 2
+// app.use('/api/plans',    plansRouter)      // Mòdul 2
+// app.use('/api/billing',  billingRouter)    // Mòdul 4
 
 // ── Middleware d'errors centralitzat ────────────────────────────────
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  // No exposar errors interns en producció
-  const isDev = process.env.NODE_ENV === 'development'
-  const status  = err.status || err.statusCode || 500
-  const message = status < 500 ? err.message : 'Error intern del servidor'
+app.use(errorHandler)
 
-  if (status >= 500) {
-    console.error('[ERROR]', err)
-  }
-
-  res.status(status).json({
-    success: false,
-    message,
-    ...(isDev && status >= 500 && { stack: err.stack }),
-  })
-})
-
-// ── Arrencada del servidor ───────────────────────────────────────────
+// ── Arrencada ────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`[backend] Servidor arrencant al port ${PORT} (${process.env.NODE_ENV || 'development'})`)
+  console.log(`[backend] Port ${PORT} — ${process.env.NODE_ENV || 'development'}`)
 })
 
 export default app
