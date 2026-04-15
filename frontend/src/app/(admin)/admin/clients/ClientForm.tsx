@@ -7,13 +7,21 @@ import { usePlans, useCreateClient, useUpdateClient } from '../../../../hooks/us
 import { useServices } from '../../../../hooks/useServices'
 import type { Client, Service } from '../../../../types'
 
-const PLAN_BADGES: Record<string, { label: string; cls: string }> = {
-  basic:       { label: 'Bàsic',       cls: 'text-[#4ade80] border-[#4ade80]/40' },
-  pro:         { label: 'Pro',         cls: 'text-[#60a5fa] border-[#60a5fa]/40' },
-  premium:     { label: 'Premium',     cls: 'text-[#c084fc] border-[#c084fc]/40' },
-  empresarial: { label: 'Empresarial', cls: 'text-[#FF6B00] border-[#FF6B00]/40' },
+// ── Badge descriptors per pla ────────────────────────────────────────────
+const PLAN_STYLES: Record<string, {
+  accent: string
+  bg:     string
+  border: string
+  label:  string
+  short:  string
+}> = {
+  basic:       { accent: '#4ade80', bg: 'bg-[#4ade80]/5',  border: 'border-[#4ade80]/30', label: 'Bàsic',       short: 'BÀS' },
+  pro:         { accent: '#60a5fa', bg: 'bg-[#60a5fa]/5',  border: 'border-[#60a5fa]/30', label: 'Pro',         short: 'PRO' },
+  premium:     { accent: '#c084fc', bg: 'bg-[#c084fc]/5',  border: 'border-[#c084fc]/30', label: 'Premium',     short: 'PRE' },
+  empresarial: { accent: '#FF6B00', bg: 'bg-[#FF6B00]/5',  border: 'border-[#FF6B00]/30', label: 'Empresarial', short: 'EMP' },
 }
 
+// ── Esquema ──────────────────────────────────────────────────────────────
 const schema = z.object({
   companyName:  z.string().min(2, 'Mínim 2 caràcters'),
   contactName:  z.string().min(2, 'Mínim 2 caràcters'),
@@ -43,12 +51,12 @@ export default function ClientForm({ client, onClose }: Props) {
   const initExtras   = activeSub?.services.filter(s => s.isExtra).map(s => s.serviceId) ?? []
   const initCustom   = activeSub?.services.filter(s => !s.isExtra).map(s => s.serviceId) ?? []
 
-  const [planMode, setPlanMode]           = useState(initPlanMode)
-  const [extraIds, setExtraIds]           = useState<string[]>(initExtras)
-  const [customIds, setCustomIds]         = useState<string[]>(initCustom)
-  const [priceMonthly, setPriceMonthly]   = useState(activeSub?.priceMonthly?.toString() ?? '')
-  const [priceSetup, setPriceSetup]       = useState(activeSub?.priceSetup?.toString() ?? '')
-  const [submitError, setSubmitError]     = useState('')
+  const [planMode, setPlanMode]         = useState(initPlanMode)
+  const [extraIds, setExtraIds]         = useState<string[]>(initExtras)
+  const [customIds, setCustomIds]       = useState<string[]>(initCustom)
+  const [priceMonthly, setPriceMonthly] = useState(activeSub?.priceMonthly?.toString() ?? '')
+  const [priceSetup, setPriceSetup]     = useState(activeSub?.priceSetup?.toString() ?? '')
+  const [submitError, setSubmitError]   = useState('')
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -64,28 +72,23 @@ export default function ClientForm({ client, onClose }: Props) {
     },
   })
 
-  // Serveis inclosos al pla seleccionat
-  const selectedPlan    = plans.find(p => p.id === planMode)
-  const planServiceIds  = selectedPlan?.services.map(ps => ps.service.id) ?? []
+  const selectedPlan   = plans.find(p => p.id === planMode)
+  const planServiceIds = selectedPlan?.services.map(ps => ps.service.id) ?? []
 
-  // Mapa: serviceId → plans que l'inclouen
   const servicePlanMap = Object.fromEntries(
-    services.map(s => [
-      s.id,
-      (s.planServices ?? []).map(ps => ps.plan.slug),
-    ])
+    services.map(s => [s.id, (s.planServices ?? []).map(ps => ps.plan.slug)])
   )
 
   const calcPrices = (ids: string[], baseMonthly = 0, baseSetup = 0) => {
-    const selected = services.filter(s => ids.includes(s.id))
-    const monthly  = baseMonthly + selected.reduce((a, s) => a + Number(s.monthlyPrice), 0)
-    const setup    = baseSetup   + selected.reduce((a, s) => a + Number(s.setupPrice),   0)
+    const sel     = services.filter(s => ids.includes(s.id))
+    const monthly = baseMonthly + sel.reduce((a, s) => a + Number(s.monthlyPrice), 0)
+    const setup   = baseSetup   + sel.reduce((a, s) => a + Number(s.setupPrice),   0)
     return { monthly, setup }
   }
 
   const toggleExtra = (id: string) => {
-    const next    = extraIds.includes(id) ? extraIds.filter(x => x !== id) : [...extraIds, id]
-    const base    = selectedPlan ? Number(selectedPlan.priceMonthly) : 0
+    const next = extraIds.includes(id) ? extraIds.filter(x => x !== id) : [...extraIds, id]
+    const base = selectedPlan ? Number(selectedPlan.priceMonthly) : 0
     const { monthly, setup } = calcPrices(next, base, 0)
     setExtraIds(next)
     setPriceMonthly(monthly.toString())
@@ -100,22 +103,36 @@ export default function ClientForm({ client, onClose }: Props) {
     setPriceSetup(setup.toString())
   }
 
+  const selectPlan = (id: string) => {
+    const newPlan = plans.find(p => p.id === id)
+    setPlanMode(id)
+    setExtraIds([])
+    setCustomIds([])
+    if (newPlan) {
+      setPriceMonthly(Number(newPlan.priceMonthly).toString())
+      setPriceSetup('0')
+    } else if (id === 'custom') {
+      setPriceMonthly('0')
+      setPriceSetup('0')
+    } else {
+      setPriceMonthly('')
+      setPriceSetup('')
+    }
+  }
+
   const onSubmit = async (data: FormData) => {
     setSubmitError('')
     try {
       const isCustom = planMode === 'custom'
-
-      if (isCustom) {
-        if (customIds.length === 0) { setSubmitError('Selecciona almenys un servei'); return }
-        if (!priceMonthly)          { setSubmitError('Introdueix el preu mensual');   return }
-      }
+      if (isCustom && customIds.length === 0) { setSubmitError('Selecciona almenys un servei'); return }
+      if (isCustom && !priceMonthly)          { setSubmitError('Introdueix el preu mensual');   return }
 
       const pm = priceMonthly ? parseFloat(priceMonthly) : undefined
       const ps = priceSetup   ? parseFloat(priceSetup)   : undefined
 
       const planPayload =
-        planMode === ''     ? {} :
-        isCustom            ? { isCustom: true as const, priceMonthly: pm ?? 0, priceSetup: ps ?? 0, serviceIds: customIds } :
+        planMode === '' ? {} :
+        isCustom        ? { isCustom: true as const, priceMonthly: pm ?? 0, priceSetup: ps ?? 0, serviceIds: customIds } :
         extraIds.length > 0 ? { planId: planMode, extraServiceIds: extraIds, priceMonthly: pm, priceSetup: ps } :
                               { planId: planMode, priceMonthly: pm, priceSetup: ps }
 
@@ -129,178 +146,239 @@ export default function ClientForm({ client, onClose }: Props) {
 
   return (
     <main className="grid-bg min-h-screen p-8 relative">
-      <div className="relative z-10 max-w-2xl mx-auto">
+      <div className="relative z-10 max-w-3xl mx-auto">
 
-        <div className="mb-8">
-          <p className="section-tag">{isEdit ? 'EDITAR CLIENT' : 'NOU CLIENT'}</p>
-          <h1 className="font-orbitron font-black text-2xl text-[#FF6B00]">
-            {isEdit ? client.companyName : 'Alta de client'}
-          </h1>
+        {/* ── Header ──────────────────────────────────────────── */}
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <p className="section-tag">{isEdit ? 'EDITAR CLIENT' : 'NOU CLIENT'}</p>
+            <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">
+              {isEdit ? client.companyName : 'Alta de client'}
+            </h1>
+          </div>
+          <button className="btn-outline text-xs" onClick={onClose}>← ENRERE</button>
         </div>
 
         {submitError && (
-          <div className="alert-danger mb-4">
-            <p className="font-rajdhani text-[#ff4444] text-sm">{submitError}</p>
+          <div className="alert-danger mb-6">
+            <p className="font-rajdhani text-[#ff4444]">{submitError}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="card p-8 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="form-label">Nom empresa *</label>
-              <input className="form-input" {...register('companyName')} />
-              {errors.companyName && <p className="font-mono text-[11px] text-[#ff4444] mt-1">{errors.companyName.message}</p>}
+          {/* ── Dades empresa ─────────────────────────────────── */}
+          <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-1 h-5 bg-[#FF6B00]" />
+              <p className="font-mono text-[10px] tracking-[4px] text-[#FF6B00] uppercase">Dades empresa</p>
             </div>
-            <div>
-              <label className="form-label">Persona de contacte *</label>
-              <input className="form-input" {...register('contactName')} />
-              {errors.contactName && <p className="font-mono text-[11px] text-[#ff4444] mt-1">{errors.contactName.message}</p>}
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="form-label">Email de contacte *</label>
-              <input className="form-input" type="email" {...register('contactEmail')} />
-              {errors.contactEmail && <p className="font-mono text-[11px] text-[#ff4444] mt-1">{errors.contactEmail.message}</p>}
-            </div>
-            <div>
-              <label className="form-label">Telèfon</label>
-              <input className="form-input" type="tel" {...register('contactPhone')} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="form-label">NIF / CIF</label>
-              <input className="form-input" {...register('nif')} />
-            </div>
-            <div>
-              <label className="form-label">Domini web</label>
-              <input className="form-input" placeholder="exemple.com" {...register('domain')} />
-            </div>
-          </div>
-
-          <div>
-            <label className="form-label">Adreça</label>
-            <input className="form-input" {...register('address')} />
-          </div>
-
-          <div>
-            <label className="form-label">Notes internes</label>
-            <textarea className="form-input h-20 resize-none" {...register('notes')} />
-          </div>
-
-          {/* ── Selector de pla ───────────────────────────────── */}
-          <div className="border-t border-[var(--border)] pt-5">
-            <label className="form-label">Pla contractat</label>
-            <select
-              className="form-input"
-              value={planMode}
-              onChange={e => {
-                const newPlan = plans.find(p => p.id === e.target.value)
-                setPlanMode(e.target.value)
-                setExtraIds([])
-                setCustomIds([])
-                if (newPlan) {
-                  setPriceMonthly(Number(newPlan.priceMonthly).toString())
-                  setPriceSetup('0')
-                } else if (e.target.value === 'custom') {
-                  setPriceMonthly('0')
-                  setPriceSetup('0')
-                } else {
-                  setPriceMonthly('')
-                  setPriceSetup('')
-                }
-              }}
-            >
-              <option value="">— Sense pla assignat —</option>
-              {plans.map(p => (
-                <option key={p.id} value={p.id}>
-                  {p.name} — {p.priceMonthly}€/mes ({p.services.length} serveis)
-                </option>
-              ))}
-              <option value="custom">✦ Pla personalitzat</option>
-            </select>
-          </div>
-
-          {/* ── Serveis del pla seleccionat (bloquejats) ─────── */}
-          {planMode && planMode !== 'custom' && selectedPlan && (
-            <div className="bg-[var(--bg-0)] border border-[var(--border)] p-4">
-              <p className="font-mono text-[10px] tracking-[3px] text-[var(--text-muted)] uppercase mb-3">
-                Serveis inclosos al pla {selectedPlan.name}
-              </p>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {selectedPlan.services.map(ps => (
-                  <span key={ps.service.id} className="font-rajdhani text-sm text-[var(--text)] bg-[var(--bg-1)] border border-[var(--border)] px-2 py-1">
-                    ✓ {ps.service.name}
-                  </span>
-                ))}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 sm:col-span-1">
+                <label className="form-label">Nom empresa *</label>
+                <input className="form-input" {...register('companyName')} />
+                {errors.companyName && <p className="font-mono text-[10px] text-[#ff4444] mt-1">{errors.companyName.message}</p>}
               </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="form-label">NIF / CIF</label>
+                <input className="form-input" {...register('nif')} />
+              </div>
+              <div className="col-span-2">
+                <label className="form-label">Adreça</label>
+                <input className="form-input" {...register('address')} />
+              </div>
+              <div className="col-span-2">
+                <label className="form-label">Domini web</label>
+                <input className="form-input" placeholder="exemple.com" {...register('domain')} />
+              </div>
+            </div>
+          </section>
 
-              {/* Serveis extra disponibles */}
-              {services.filter(s => !planServiceIds.includes(s.id)).length > 0 && (
-                <>
-                  <p className="font-mono text-[10px] tracking-[3px] text-[#FF6B00] uppercase mb-2">
-                    Serveis addicionals
+          {/* ── Dades contacte ────────────────────────────────── */}
+          <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-1 h-5 bg-[#60a5fa]" />
+              <p className="font-mono text-[10px] tracking-[4px] text-[#60a5fa] uppercase">Contacte</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 sm:col-span-1">
+                <label className="form-label">Persona de contacte *</label>
+                <input className="form-input" {...register('contactName')} />
+                {errors.contactName && <p className="font-mono text-[10px] text-[#ff4444] mt-1">{errors.contactName.message}</p>}
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <label className="form-label">Telèfon</label>
+                <input className="form-input" type="tel" {...register('contactPhone')} />
+              </div>
+              <div className="col-span-2">
+                <label className="form-label">Email de contacte *</label>
+                <input className="form-input" type="email" {...register('contactEmail')} />
+                {errors.contactEmail && <p className="font-mono text-[10px] text-[#ff4444] mt-1">{errors.contactEmail.message}</p>}
+              </div>
+              <div className="col-span-2">
+                <label className="form-label">Notes internes</label>
+                <textarea className="form-input h-20 resize-none" {...register('notes')} />
+              </div>
+            </div>
+          </section>
+
+          {/* ── Pla contractat ────────────────────────────────── */}
+          <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-1 h-5 bg-[#c084fc]" />
+              <p className="font-mono text-[10px] tracking-[4px] text-[#c084fc] uppercase">Pla contractat</p>
+            </div>
+
+            {/* Cards de plans */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+              {/* Opció: sense pla */}
+              <button
+                type="button"
+                onClick={() => selectPlan('')}
+                className={`p-3 border text-left transition-all ${
+                  planMode === ''
+                    ? 'border-[var(--text-muted)] bg-[var(--bg-1)]'
+                    : 'border-[var(--border)] hover:border-[var(--text-muted)]'
+                }`}
+              >
+                <p className="font-mono text-[9px] tracking-widest text-[var(--text-muted)] uppercase mb-1">SENSE PLA</p>
+                <p className="font-rajdhani text-sm text-[var(--text-muted)]">Sense subscripció</p>
+              </button>
+
+              {/* Plans estàndard */}
+              {plans.map(p => {
+                const style   = PLAN_STYLES[p.slug]
+                const isActive = planMode === p.id
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => selectPlan(p.id)}
+                    className={`p-3 border text-left transition-all ${
+                      isActive
+                        ? `${style?.border ?? 'border-[#FF6B00]'} ${style?.bg ?? ''}`
+                        : 'border-[var(--border)] hover:border-[var(--text-muted)]'
+                    }`}
+                  >
+                    <p className="font-mono text-[9px] tracking-widest uppercase mb-1"
+                      style={{ color: isActive ? (style?.accent ?? '#FF6B00') : 'var(--text-muted)' }}>
+                      {p.services.length} SERVEIS
+                    </p>
+                    <p className="font-rajdhani font-semibold text-sm text-[var(--text)]">{p.name}</p>
+                    <p className="font-mono text-[10px] mt-0.5" style={{ color: style?.accent ?? '#FF6B00' }}>
+                      {p.priceMonthly}€/mes
+                    </p>
+                  </button>
+                )
+              })}
+
+              {/* Pla personalitzat */}
+              <button
+                type="button"
+                onClick={() => selectPlan('custom')}
+                className={`p-3 border text-left transition-all col-span-2 sm:col-span-1 ${
+                  planMode === 'custom'
+                    ? 'border-[#FF6B00] bg-[#FF6B00]/5'
+                    : 'border-[#FF6B00]/30 hover:border-[#FF6B00]'
+                }`}
+              >
+                <p className="font-mono text-[9px] tracking-widest text-[#FF6B00] uppercase mb-1">PERSONALITZAT</p>
+                <p className="font-rajdhani font-semibold text-sm text-[var(--text)]">Pla a mida</p>
+                <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">Selecció lliure</p>
+              </button>
+            </div>
+
+            {/* ── Serveis del pla estàndard (bloquejats) ──────── */}
+            {planMode && planMode !== 'custom' && selectedPlan && (
+              <div className="mt-4 space-y-4">
+                {/* Serveis inclosos */}
+                <div>
+                  <p className="font-mono text-[9px] tracking-[3px] text-[var(--text-muted)] uppercase mb-2">
+                    Inclosos al pla {selectedPlan.name}
                   </p>
-                  <div className="grid grid-cols-1 gap-1">
-                    {services.filter(s => !planServiceIds.includes(s.id)).map(s => (
-                      <ServiceCheckbox
-                        key={s.id}
-                        service={s}
-                        checked={extraIds.includes(s.id)}
-                        onChange={() => toggleExtra(s.id)}
-                        planSlugs={servicePlanMap[s.id] ?? []}
-                      />
-                    ))}
+                  <div className="flex flex-wrap gap-1.5">
+                    {selectedPlan.services.map(ps => {
+                      const style = PLAN_STYLES[selectedPlan.slug]
+                      return (
+                        <span
+                          key={ps.service.id}
+                          className="font-mono text-[9px] tracking-wider px-2 py-1 border"
+                          style={{ color: style?.accent ?? '#FF6B00', borderColor: `${style?.accent ?? '#FF6B00'}40` }}
+                        >
+                          ✓ {ps.service.name}
+                        </span>
+                      )
+                    })}
                   </div>
+                </div>
+
+                {/* Serveis extra disponibles */}
+                {services.filter(s => !planServiceIds.includes(s.id)).length > 0 && (
+                  <div>
+                    <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-2">
+                      Serveis addicionals (opcional)
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {services.filter(s => !planServiceIds.includes(s.id)).map(s => (
+                        <ServiceCheckbox
+                          key={s.id}
+                          service={s}
+                          checked={extraIds.includes(s.id)}
+                          onChange={() => toggleExtra(s.id)}
+                          planSlugs={servicePlanMap[s.id] ?? []}
+                        />
+                      ))}
+                    </div>
+                    {extraIds.length > 0 && (
+                      <PriceFields
+                        priceMonthly={priceMonthly}
+                        priceSetup={priceSetup}
+                        onChangeMonthly={setPriceMonthly}
+                        onChangeSetup={setPriceSetup}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Pla personalitzat ────────────────────────────── */}
+            {planMode === 'custom' && (
+              <div className="mt-4 space-y-3">
+                <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-2">
+                  Selecciona els serveis contractats
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {services.map(s => (
+                    <ServiceCheckbox
+                      key={s.id}
+                      service={s}
+                      checked={customIds.includes(s.id)}
+                      onChange={() => toggleCustom(s.id)}
+                      planSlugs={servicePlanMap[s.id] ?? []}
+                    />
+                  ))}
+                </div>
+                {customIds.length > 0 ? (
                   <PriceFields
                     priceMonthly={priceMonthly}
                     priceSetup={priceSetup}
                     onChangeMonthly={setPriceMonthly}
                     onChangeSetup={setPriceSetup}
-                    showAlways={extraIds.length > 0}
                   />
-                </>
-              )}
-            </div>
-          )}
-
-          {/* ── Pla personalitzat ─────────────────────────────── */}
-          {planMode === 'custom' && (
-            <div className="bg-[var(--bg-0)] border border-[#FF6B00]/30 p-4 space-y-4">
-              <p className="font-mono text-[10px] tracking-[3px] text-[#FF6B00] uppercase">
-                Pla personalitzat — selecciona serveis
-              </p>
-              <div className="grid grid-cols-1 gap-1">
-                {services.map(s => (
-                  <ServiceCheckbox
-                    key={s.id}
-                    service={s}
-                    checked={customIds.includes(s.id)}
-                    onChange={() => toggleCustom(s.id)}
-                    planSlugs={servicePlanMap[s.id] ?? []}
-                  />
-                ))}
+                ) : (
+                  <p className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest py-2">
+                    Selecciona serveis per calcular el preu
+                  </p>
+                )}
               </div>
-              {customIds.length > 0 && (
-                <p className="font-mono text-[10px] text-[#FF6B00]">
-                  {customIds.length} servei{customIds.length !== 1 ? 's' : ''} seleccionat{customIds.length !== 1 ? 's' : ''}
-                </p>
-              )}
-              <PriceFields
-                priceMonthly={priceMonthly}
-                priceSetup={priceSetup}
-                onChangeMonthly={setPriceMonthly}
-                onChangeSetup={setPriceSetup}
-                showAlways
-              />
-            </div>
-          )}
+            )}
+          </section>
 
-          <div className="flex gap-3 pt-2">
+          {/* ── Botons ────────────────────────────────────────── */}
+          <div className="flex gap-3 pb-8">
             <button type="submit" className="btn-primary" disabled={isSubmitting}>
               {isSubmitting ? 'DESANT...' : isEdit ? 'DESAR CANVIS' : 'CREAR CLIENT'}
             </button>
@@ -308,55 +386,60 @@ export default function ClientForm({ client, onClose }: Props) {
               CANCEL·LAR
             </button>
           </div>
+
         </form>
       </div>
     </main>
   )
 }
 
-// ── Camps de preu editables ────────────────────────────────────────────
-function PriceFields({ priceMonthly, priceSetup, onChangeMonthly, onChangeSetup, showAlways }: {
+// ── PriceFields ──────────────────────────────────────────────────────────
+function PriceFields({ priceMonthly, priceSetup, onChangeMonthly, onChangeSetup }: {
   priceMonthly:    string
   priceSetup:      string
   onChangeMonthly: (v: string) => void
   onChangeSetup:   (v: string) => void
-  showAlways?:     boolean
 }) {
-  if (!showAlways && !priceMonthly && !priceSetup) return null
   return (
-    <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-[var(--border)]">
-      <div>
-        <label className="form-label">
-          Setup (€)
-          <span className="text-[var(--text-muted)] font-normal ml-1">(únic)</span>
-        </label>
-        <input
-          className="form-input"
-          type="number" min="0" step="0.01" placeholder="0.00"
-          value={priceSetup}
-          onChange={e => onChangeSetup(e.target.value)}
-        />
+    <div className="mt-4 p-4 bg-[var(--bg-1)] border border-[#FF6B00]/20">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-1 h-4 bg-[#FF6B00]" />
+        <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">Preu final del contracte</p>
       </div>
-      <div>
-        <label className="form-label">
-          Mensual (€)
-          <span className="text-[var(--text-muted)] font-normal ml-1">(recurrent)</span>
-        </label>
-        <input
-          className="form-input"
-          type="number" min="0" step="0.01" placeholder="0.00"
-          value={priceMonthly}
-          onChange={e => onChangeMonthly(e.target.value)}
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="form-label text-[9px]">Setup (€) — pagament únic</label>
+          <div className="relative">
+            <input
+              className="form-input pr-8"
+              type="number" min="0" step="0.01" placeholder="0.00"
+              value={priceSetup}
+              onChange={e => onChangeSetup(e.target.value)}
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-[var(--text-muted)]">€</span>
+          </div>
+        </div>
+        <div>
+          <label className="form-label text-[9px]">Mensual (€) — recurrent</label>
+          <div className="relative">
+            <input
+              className="form-input pr-8"
+              type="number" min="0" step="0.01" placeholder="0.00"
+              value={priceMonthly}
+              onChange={e => onChangeMonthly(e.target.value)}
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-[var(--text-muted)]">€</span>
+          </div>
+        </div>
       </div>
-      <p className="col-span-2 font-mono text-[10px] text-[var(--text-muted)]">
-        Preus calculats automàticament. Pots modificar-los lliurement.
+      <p className="font-mono text-[9px] text-[var(--text-muted)] mt-2">
+        Calculat automàticament a partir dels serveis · Pots modificar-lo lliurement
       </p>
     </div>
   )
 }
 
-// ── Component de checkbox amb indicadors de pla ────────────────────────
+// ── ServiceCheckbox ──────────────────────────────────────────────────────
 function ServiceCheckbox({ service, checked, onChange, planSlugs }: {
   service:   Service
   checked:   boolean
@@ -364,29 +447,38 @@ function ServiceCheckbox({ service, checked, onChange, planSlugs }: {
   planSlugs: string[]
 }) {
   return (
-    <label className={`flex items-center gap-3 p-2 border cursor-pointer transition-colors ${
+    <label className={`flex items-start gap-2.5 p-2.5 border cursor-pointer transition-all ${
       checked
-        ? 'border-[#FF6B00] bg-[#FF6B00]/10'
+        ? 'border-[#FF6B00] bg-[#FF6B00]/8'
         : 'border-[var(--border)] hover:border-[var(--text-muted)]'
     }`}>
-      <input type="checkbox" className="accent-[#FF6B00]" checked={checked} onChange={onChange} />
-      <span className="font-rajdhani text-sm text-[var(--text)] flex-1">{service.name}</span>
-      <span className="font-mono text-[10px] text-[var(--text-muted)] whitespace-nowrap">
-        {service.setupPrice > 0 && `${service.setupPrice}€ setup`}
-        {service.setupPrice > 0 && service.monthlyPrice > 0 && ' · '}
-        {service.monthlyPrice > 0 && `${service.monthlyPrice}€/mes`}
-      </span>
-      <div className="flex gap-1">
-        {planSlugs.map(slug => {
-          const badge = PLAN_BADGES[slug]
-          if (!badge) return null
-          return (
-            <span key={slug} className={`font-mono text-[8px] tracking-wider px-1.5 py-0.5 border ${badge.cls}`}>
-              {badge.label.slice(0, 3).toUpperCase()}
-            </span>
-          )
-        })}
+      <input type="checkbox" className="accent-[#FF6B00] mt-0.5 shrink-0" checked={checked} onChange={onChange} />
+      <div className="flex-1 min-w-0">
+        <p className="font-rajdhani text-sm text-[var(--text)] leading-tight">{service.name}</p>
+        <p className="font-mono text-[9px] text-[var(--text-muted)] mt-0.5">
+          {service.setupPrice > 0 && `${service.setupPrice}€ setup`}
+          {service.setupPrice > 0 && service.monthlyPrice > 0 && ' · '}
+          {service.monthlyPrice > 0 && `${service.monthlyPrice}€/mes`}
+          {service.setupPrice === 0 && service.monthlyPrice === 0 && 'sense cost addicional'}
+        </p>
       </div>
+      {planSlugs.length > 0 && (
+        <div className="flex flex-col gap-0.5 shrink-0">
+          {planSlugs.map(slug => {
+            const style = PLAN_STYLES[slug]
+            if (!style) return null
+            return (
+              <span
+                key={slug}
+                className="font-mono text-[7px] tracking-wider px-1 py-0.5 border text-center"
+                style={{ color: style.accent, borderColor: `${style.accent}40` }}
+              >
+                {style.short}
+              </span>
+            )
+          })}
+        </div>
+      )}
     </label>
   )
 }

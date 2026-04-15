@@ -7,11 +7,11 @@ import { z } from 'zod'
 import { useServices, useCreateService, useUpdateService, useDeleteService } from '../../../../hooks/useServices'
 import type { Service } from '../../../../types'
 
-const PLAN_COLORS: Record<string, string> = {
-  basic:       'bg-[#1a3a1a] text-[#4ade80] border-[#4ade80]/30',
-  pro:         'bg-[#1a2a3a] text-[#60a5fa] border-[#60a5fa]/30',
-  premium:     'bg-[#2a1a3a] text-[#c084fc] border-[#c084fc]/30',
-  empresarial: 'bg-[#3a2a1a] text-[#FF6B00] border-[#FF6B00]/30',
+const PLAN_STYLES: Record<string, { accent: string; bg: string; label: string }> = {
+  basic:       { accent: '#4ade80', bg: 'bg-[#4ade80]/10',  label: 'Bàsic'       },
+  pro:         { accent: '#60a5fa', bg: 'bg-[#60a5fa]/10',  label: 'Pro'         },
+  premium:     { accent: '#c084fc', bg: 'bg-[#c084fc]/10',  label: 'Premium'     },
+  empresarial: { accent: '#FF6B00', bg: 'bg-[#FF6B00]/10',  label: 'Empresarial' },
 }
 
 const schema = z.object({
@@ -42,37 +42,67 @@ function ServiceForm({ service, onClose }: { service?: Service; onClose: () => v
     onClose()
   }
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--bg-1)] border border-[var(--border)] p-6 w-full max-w-md">
-        <p className="section-tag mb-4">{service ? 'EDITAR SERVEI' : 'NOU SERVEI'}</p>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="bg-[var(--bg-1)] border border-[var(--border)] w-full max-w-md">
+        {/* Modal header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)]">
+          <div>
+            <p className="font-mono text-[9px] tracking-[4px] text-[#FF6B00] uppercase">
+              {service ? 'EDITAR SERVEI' : 'NOU SERVEI'}
+            </p>
+            <p className="font-rajdhani font-semibold text-[var(--text)] mt-0.5">
+              {service ? service.name : 'Afegir al catàleg'}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="font-mono text-[var(--text-muted)] hover:text-[var(--text)] text-lg leading-none"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           <div>
             <label className="form-label">Nom *</label>
             <input className="form-input" {...register('name')} />
-            {errors.name && <p className="font-mono text-[11px] text-[#ff4444] mt-1">{errors.name.message}</p>}
+            {errors.name && <p className="font-mono text-[10px] text-[#ff4444] mt-1">{errors.name.message}</p>}
           </div>
           <div>
             <label className="form-label">Slug *</label>
-            <input className="form-input" placeholder="nom-del-servei" {...register('slug')} />
-            {errors.slug && <p className="font-mono text-[11px] text-[#ff4444] mt-1">{errors.slug.message}</p>}
+            <input className="form-input font-mono" placeholder="nom-del-servei" {...register('slug')} />
+            {errors.slug && <p className="font-mono text-[10px] text-[#ff4444] mt-1">{errors.slug.message}</p>}
           </div>
           <div>
             <label className="form-label">Descripció</label>
             <textarea className="form-input h-20 resize-none" {...register('description')} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="form-label">Preu setup (€)</label>
-              <input className="form-input" type="number" min="0" step="0.01" {...register('setupPrice')} />
-            </div>
-            <div>
-              <label className="form-label">Preu mensual (€)</label>
-              <input className="form-input" type="number" min="0" step="0.01" {...register('monthlyPrice')} />
+
+          {/* Preus */}
+          <div>
+            <label className="form-label">Preus</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative">
+                <label className="font-mono text-[9px] text-[var(--text-muted)] uppercase tracking-wider block mb-1.5">Setup (únic)</label>
+                <div className="relative">
+                  <input className="form-input pr-7" type="number" min="0" step="0.01" {...register('setupPrice')} />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-[var(--text-muted)]">€</span>
+                </div>
+              </div>
+              <div>
+                <label className="font-mono text-[9px] text-[var(--text-muted)] uppercase tracking-wider block mb-1.5">Mensual</label>
+                <div className="relative">
+                  <input className="form-input pr-7" type="number" min="0" step="0.01" {...register('monthlyPrice')} />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[11px] text-[var(--text-muted)]">€</span>
+                </div>
+              </div>
             </div>
           </div>
+
           <div className="flex gap-3 pt-2">
             <button type="submit" className="btn-primary text-xs" disabled={isSubmitting}>
-              {isSubmitting ? 'DESANT...' : service ? 'DESAR' : 'CREAR'}
+              {isSubmitting ? 'DESANT...' : service ? 'DESAR' : 'CREAR SERVEI'}
             </button>
             <button type="button" className="btn-outline text-xs" onClick={onClose}>CANCEL·LAR</button>
           </div>
@@ -86,17 +116,23 @@ export default function ServicesPage() {
   const router = useRouter()
   const { data: services = [], isLoading } = useServices()
   const deleteService = useDeleteService()
-  const [showForm, setShowForm]     = useState(false)
-  const [editService, setEdit]      = useState<Service | undefined>()
+  const [showForm, setShowForm]   = useState(false)
+  const [editService, setEdit]    = useState<Service | undefined>()
 
   return (
     <main className="grid-bg min-h-screen p-8 relative">
       <div className="relative z-10 max-w-5xl mx-auto">
 
-        <div className="flex justify-between items-center mb-8">
+        {/* ── Header ──────────────────────────────────────────── */}
+        <div className="flex justify-between items-start mb-8">
           <div>
             <p className="section-tag">CONFIGURACIÓ</p>
-            <h1 className="font-orbitron font-black text-2xl text-[#FF6B00]">Serveis</h1>
+            <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">Serveis</h1>
+            {!isLoading && (
+              <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">
+                {services.length} servei{services.length !== 1 ? 's' : ''} al catàleg
+              </p>
+            )}
           </div>
           <div className="flex gap-3">
             <button className="btn-outline text-xs" onClick={() => router.push('/admin/dashboard')}>
@@ -108,49 +144,97 @@ export default function ServicesPage() {
           </div>
         </div>
 
+        {/* ── Contingut ───────────────────────────────────────── */}
         {isLoading ? (
-          <div className="card p-8 text-center">
-            <p className="font-mono text-[11px] text-[var(--text-muted)] animate-pulse">CARREGANT...</p>
+          <div className="bg-[var(--bg-2)] border border-[var(--border)] p-16 text-center">
+            <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">
+              Carregant serveis...
+            </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {services.map(s => (
-              <div key={s.id} className="card p-4 flex items-center gap-4">
-                <div className="flex-1">
-                  <p className="font-rajdhani font-semibold text-[var(--text)]">{s.name}</p>
-                  <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">
-                    {s.setupPrice > 0 && `Setup: ${s.setupPrice}€`}
-                    {s.setupPrice > 0 && s.monthlyPrice > 0 && ' · '}
-                    {s.monthlyPrice > 0 && `Mensual: ${s.monthlyPrice}€`}
-                    {s.setupPrice === 0 && s.monthlyPrice === 0 && 'Sense preu configurat'}
-                  </p>
-                </div>
-                <div className="flex gap-1 flex-wrap justify-end">
-                  {(s.planServices ?? []).map(ps => (
-                    <span
-                      key={ps.plan.id}
-                      className={`font-mono text-[9px] tracking-widest px-2 py-0.5 border ${PLAN_COLORS[ps.plan.slug] ?? 'bg-[var(--bg-0)] text-[var(--text-muted)] border-[var(--border)]'}`}
-                    >
-                      {ps.plan.name.toUpperCase()}
-                    </span>
-                  ))}
-                  {(s.planServices ?? []).length === 0 && (
-                    <span className="font-mono text-[9px] text-[var(--text-muted)]">cap pla</span>
-                  )}
-                </div>
-                <div className="flex gap-2 ml-4">
-                  <button className="btn-outline text-[10px] px-2 py-1" onClick={() => setEdit(s)}>
-                    EDITAR
-                  </button>
-                  <button
-                    className="font-mono text-[10px] text-[#ff4444] hover:text-[#ff6666] tracking-widest"
-                    onClick={() => deleteService.mutate(s.id)}
-                  >
-                    ELIMINAR
-                  </button>
-                </div>
+          <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
+
+            {/* Capçalera */}
+            <div className="grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
+              {['SERVEI', 'SETUP', 'MENSUAL', 'PLANS', 'ACCIONS'].map(h => (
+                <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
+              ))}
+            </div>
+
+            {services.length === 0 ? (
+              <div className="p-12 text-center">
+                <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-widest mb-4">CATÀLEG BUIT</p>
+                <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>
+                  + NOU SERVEI
+                </button>
               </div>
-            ))}
+            ) : (
+              services.map((s, i) => {
+                const planSlugs = (s.planServices ?? []).map(ps => ps.plan.slug)
+                return (
+                  <div
+                    key={s.id}
+                    className={`grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-4 items-center
+                      hover:bg-[var(--bg-1)] transition-colors
+                      ${i < services.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
+                  >
+                    {/* Nom */}
+                    <div>
+                      <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">{s.name}</p>
+                      <p className="font-mono text-[9px] text-[var(--text-muted)] mt-0.5">{s.slug}</p>
+                      {s.description && (
+                        <p className="font-rajdhani text-[12px] text-[var(--text-muted)] mt-0.5 line-clamp-1">{s.description}</p>
+                      )}
+                    </div>
+
+                    {/* Setup */}
+                    <p className="font-mono text-[11px] text-[var(--text)]">
+                      {s.setupPrice > 0 ? `${s.setupPrice}€` : <span className="text-[var(--text-muted)]">—</span>}
+                    </p>
+
+                    {/* Mensual */}
+                    <p className="font-mono text-[11px] text-[var(--text)]">
+                      {s.monthlyPrice > 0 ? `${s.monthlyPrice}€` : <span className="text-[var(--text-muted)]">—</span>}
+                    </p>
+
+                    {/* Plans */}
+                    <div className="flex flex-wrap gap-1">
+                      {planSlugs.length === 0 ? (
+                        <span className="font-mono text-[9px] text-[var(--text-muted)]">cap pla</span>
+                      ) : planSlugs.map(slug => {
+                        const style = PLAN_STYLES[slug]
+                        if (!style) return null
+                        return (
+                          <span
+                            key={slug}
+                            className={`font-mono text-[8px] tracking-wider px-2 py-0.5 border ${style.bg}`}
+                            style={{ color: style.accent, borderColor: `${style.accent}40` }}
+                          >
+                            {style.label.slice(0, 3).toUpperCase()}
+                          </span>
+                        )
+                      })}
+                    </div>
+
+                    {/* Accions */}
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        className="btn-outline text-[9px] px-3 py-1.5"
+                        onClick={() => setEdit(s)}
+                      >
+                        EDITAR
+                      </button>
+                      <button
+                        className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1"
+                        onClick={() => deleteService.mutate(s.id)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
         )}
       </div>
