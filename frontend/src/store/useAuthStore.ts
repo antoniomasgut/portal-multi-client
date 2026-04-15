@@ -24,11 +24,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setAuth: (user, accessToken) => {
     set({ user, accessToken })
     localStorage.setItem('accessToken', accessToken)
+    // Cookie llegible pel middleware de Next.js (no HttpOnly)
+    document.cookie = `accessToken=${accessToken}; path=/; max-age=3600; SameSite=Lax`
   },
 
   clearAuth: () => {
     set({ user: null, accessToken: null })
     localStorage.removeItem('accessToken')
+    document.cookie = 'accessToken=; path=/; max-age=0'
   },
 
   isAdmin:  () => get().user?.role === 'ADMIN',
