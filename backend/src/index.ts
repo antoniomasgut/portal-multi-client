@@ -1,15 +1,13 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
-import dotenv from 'dotenv'
 
 import authRouter    from './routes/auth'
 import clientsRouter from './routes/clients'
 import { errorHandler } from './middleware/errorHandler'
-
-dotenv.config()
 
 const app  = express()
 const PORT = process.env.PORT || 4000
