@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Variables CSS del Design System AMG ────────────────────────── */
+:root {
+  --orange:       #FF6B00;
+  --orange2:      #FF9A3C;
+  --danger:       #ff4444;
+  --success:      #39d353;
+  --info:         #58a6ff;
+}
+
+.dark {
+  --bg-0:         #0d0d1a;
+  --bg-1:         #13132a;
+  --bg-2:         #1a1a2e;
+  --text:         #e0e0f0;
+  --text-muted:   #8888aa;
+  --border:       rgba(255, 107, 0, 0.15);
+  --border-hover: rgba(255, 107, 0, 0.35);
+}
+
+:not(.dark) {
+  --bg-0:         #f4f4f8;
+  --bg-1:         #ffffff;
+  --bg-2:         #f0f0f8;
+  --text:         #1a1a2e;
+  --text-muted:   #6666aa;
+  --border:       rgba(255, 107, 0, 0.25);
+  --border-hover: rgba(255, 107, 0, 0.5);
+}
+
+/* ── Grid de fons decoratiu ──────────────────────────────────────── */
+.grid-bg::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-image:
+    linear-gradient(rgba(255, 107, 0, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 107, 0, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Components del Design System ───────────────────────────────── */
+@layer components {
+  .btn-primary {
+    @apply font-mono text-xs tracking-[2px] uppercase px-[22px] py-[10px] bg-[#FF6B00] text-black border-none transition-all duration-200;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .btn-primary:hover {
+    @apply bg-[#FF9A3C] scale-[1.03];
+  }
+  .btn-primary:disabled {
+    @apply opacity-50 cursor-not-allowed scale-100;
+  }
+
+  .btn-outline {
+    @apply font-mono text-xs tracking-[2px] uppercase px-[22px] py-[10px] bg-transparent text-[#FF6B00] border border-[#FF6B00] transition-all duration-200;
+    clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+  }
+  .btn-outline:hover {
+    @apply bg-[#FF6B00] text-black;
+  }
+
+  .card {
+    @apply bg-[var(--bg-2)] border border-[var(--border)] rounded p-8 transition-all duration-300 relative overflow-hidden;
+  }
+  .card:hover {
+    @apply border-[#FF6B00] -translate-y-1;
+  }
+
+  .stat-card {
+    @apply bg-[var(--bg-2)] border border-[var(--border)] border-l-2 border-l-[#FF6B00] rounded-r p-4;
+  }
+
+  .badge {
+    @apply font-mono text-[10px] tracking-[1px] text-[#FF6B00] border border-[#FF6B00] px-2 py-0.5 rounded-sm;
+  }
+
+  .section-tag {
+    @apply font-mono text-[11px] tracking-[4px] text-[#FF6B00] uppercase mb-3.5 block;
+  }
+
+  .form-input {
+    @apply w-full bg-white/[0.04] border border-[rgba(255,107,0,0.2)] text-[var(--text)] px-4 py-3 font-rajdhani text-base rounded-sm outline-none transition-colors duration-200;
+  }
+  .form-input:focus {
+    @apply border-[#FF6B00];
+  }
+
+  .form-label {
+    @apply font-mono text-[11px] tracking-[2px] text-[#FF6B00] uppercase mb-2 block;
+  }
+
+  .alert-danger  { @apply bg-[var(--bg-2)] border border-[rgba(255,68,68,0.3)] border-l-2 border-l-[#ff4444] rounded-r p-4; }
+  .alert-warning { @apply bg-[var(--bg-2)] border border-[rgba(255,107,0,0.3)] border-l-2 border-l-[#FF6B00] rounded-r p-4; }
+  .alert-success { @apply bg-[var(--bg-2)] border border-[rgba(57,211,83,0.3)] border-l-2 border-l-[#39d353] rounded-r p-4; }
+}
+
+/* ── Animacions ──────────────────────────────────────────────────── */
+@keyframes pulse-orange {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 107, 0, 0.3); }
+  50%       { box-shadow: 0 0 25px rgba(255, 107, 0, 0.6); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

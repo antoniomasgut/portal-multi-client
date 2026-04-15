@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════════
+# Caddyfile — Portal Multi-Client
+# SSL automàtic via Let's Encrypt
+#
+# NOTA: Els subdominis wildcard (*.domini.com) requereixen el plugin
+# caddy-dns/cloudflare. Per a la Fase 1 (sense dominis de client),
+# el Caddy estàndard és suficient.
+# ═══════════════════════════════════════════════════════════════════
+
+# Portal principal
+{$BASE_DOMAIN} {
+  encode gzip
+
+  # Headers de seguretat
+  header {
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    X-XSS-Protection "1; mode=block"
+    Referrer-Policy strict-origin-when-cross-origin
+    Permissions-Policy "geolocation=(), microphone=()"
+    -Server
+  }
+
+  reverse_proxy frontend:3000
+}
+
+# API backend
+api.{$BASE_DOMAIN} {
+  encode gzip
+
+  header {
+    X-Content-Type-Options nosniff
+    -Server
+  }
+
+  reverse_proxy backend:4000
+}
+
+# n8n (accés restringit — no exposar en producció sense VPN)
+n8n.{$BASE_DOMAIN} {
+  reverse_proxy n8n:5678
+}
+
+# Subdominis clients (landings)
+# REQUEREIX: caddy-dns/cloudflare per SSL wildcard
+# Fase 2+ quan els clients tinguin subdominis propis
+# *.{$BASE_DOMAIN} {
+#   reverse_proxy frontend:3000
+# }

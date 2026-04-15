@@ -1,0 +1,31 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  verify:
+    name: Verify PR
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check branch name
+        run: |
+          BRANCH=${GITHUB_HEAD_REF}
+          if [[ ! "$BRANCH" =~ ^(feature|fix|chore|docs|infra|refactor)/ ]]; then
+            echo "Branch '$BRANCH' ha de començar amb: feature/, fix/, chore/, docs/, infra/, refactor/"
+            exit 1
+          fi
+          echo "Branch OK: $BRANCH"
+
+      - name: Check .env.example updated
+        run: |
+          if git diff --name-only origin/develop...HEAD | grep -q "^\.env"; then
+            if ! git diff --name-only origin/develop...HEAD | grep -q "\.env\.example"; then
+              echo "AVIS: S'ha modificat .env pero no s'ha actualitzat .env.example"
+              exit 1
+            fi
+          fi
+          echo ".env.example OK"

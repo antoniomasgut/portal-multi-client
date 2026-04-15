@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env/
+
+# Build
+.next/
+dist/
+build/
+*.egg-info/
+out/
+
+# Environment (MAI al repositori)
+.env
+.env.local
+.env.*.local
+gcs-credentials.json
+
+# Docker
+docker-compose.override.yml
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# DB
+*.db
+*.sqlite
+backend/prisma/migrations/dev.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+*.swo
+
+# Prisma
+backend/prisma/migrations/**/migration.sql
+
+# n8n (dades locals)
+n8n_data/
+
+# PDFs generats temporalment
+*.pdf
+
+# Caddy (certificats locals)
+caddy_data/
+caddy_config/

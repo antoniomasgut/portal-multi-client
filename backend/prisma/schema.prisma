@@ -1,0 +1,30 @@
+// ═══════════════════════════════════════════════════════════════════
+// Prisma Schema — Portal Multi-Client
+// Els models s'afegiran mòdul a mòdul.
+// Mòdul 1: User + Role
+// Mòdul 2: Client + Plan + ClientUsage + Discounts...
+// ═══════════════════════════════════════════════════════════════════
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Audit log (creat al Mòdul 1) ─────────────────────────────────────
+// model AuditLog {
+//   id         String   @id @default(uuid())
+//   userId     String
+//   action     String
+//   entityType String?
+//   entityId   String?
+//   details    Json?
+//   ip         String?
+//   createdAt  DateTime @default(now())
+//   @@index([userId])
+//   @@index([action])
+//   @@map("audit_logs")
+// }
