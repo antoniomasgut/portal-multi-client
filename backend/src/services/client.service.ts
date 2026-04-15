@@ -46,21 +46,22 @@ export const clientService = {
   },
 
   async create(data: {
-    companyName:         string
-    contactName:         string
-    contactEmail:        string
-    contactPhone?:       string
-    nif?:                string
-    address?:            string
-    domain?:             string
-    notes?:              string
-    planId?:             string
-    isCustom?:           boolean
-    customPriceMonthly?: number
-    serviceIds?:         string[]
-    extraServiceIds?:    string[]
+    companyName:     string
+    contactName:     string
+    contactEmail:    string
+    contactPhone?:   string
+    nif?:            string
+    address?:        string
+    domain?:         string
+    notes?:          string
+    planId?:         string
+    isCustom?:       boolean
+    priceMonthly?:   number
+    priceSetup?:     number
+    serviceIds?:     string[]
+    extraServiceIds?: string[]
   }) {
-    const { planId, isCustom, customPriceMonthly, serviceIds, extraServiceIds, ...clientData } = data
+    const { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds, ...clientData } = data
     const hasPlan  = planId || isCustom
     const renewsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 
@@ -70,7 +71,7 @@ export const clientService = {
         ...(hasPlan && {
           subscriptions: {
             create: await buildSubscriptionData({
-              planId, isCustom, customPriceMonthly,
+              planId, isCustom, priceMonthly, priceSetup,
               serviceIds, extraServiceIds, renewsAt,
             }),
           },
@@ -90,15 +91,16 @@ export const clientService = {
     domain:              string
     notes:               string
     planId:              string
-    isCustom:            boolean
-    customPriceMonthly:  number
-    serviceIds:          string[]
-    extraServiceIds:     string[]
+    isCustom:        boolean
+    priceMonthly:    number
+    priceSetup:      number
+    serviceIds:      string[]
+    extraServiceIds: string[]
   }>) {
-    const { planId, isCustom, customPriceMonthly, serviceIds, extraServiceIds, ...clientData } = data
+    const { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds, ...clientData } = data
     const changingPlan = planId || isCustom !== undefined
     if (changingPlan) {
-      await clientService.assignPlan(id, { planId, isCustom, customPriceMonthly, serviceIds, extraServiceIds })
+      await clientService.assignPlan(id, { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds })
     }
     return prisma.client.update({
       where:   { id },
@@ -115,11 +117,12 @@ export const clientService = {
   },
 
   async assignPlan(clientId: string, opts: {
-    planId?:             string
-    isCustom?:           boolean
-    customPriceMonthly?: number
-    serviceIds?:         string[]  // per pla personalitzat
-    extraServiceIds?:    string[]  // serveis extra sobre pla base
+    planId?:         string
+    isCustom?:       boolean
+    priceMonthly?:   number
+    priceSetup?:     number
+    serviceIds?:     string[]
+    extraServiceIds?: string[]
   }) {
     await prisma.subscription.updateMany({
       where: { clientId, status: 'ACTIVE' },
@@ -137,38 +140,62 @@ export const clientService = {
 
 // ── Helper: construir dades de subscripció + SubscriptionService ──────
 async function buildSubscriptionData(opts: {
-  planId?:             string
-  isCustom?:           boolean
-  customPriceMonthly?: number
-  serviceIds?:         string[]
-  extraServiceIds?:    string[]
-  renewsAt:            Date
+  planId?:         string
+  isCustom?:       boolean
+  priceMonthly?:   number   // preu final mensual (pot ser override)
+  priceSetup?:     number   // preu final setup (pot ser override)
+  serviceIds?:     string[]
+  extraServiceIds?: string[]
+  renewsAt:        Date
 }) {
-  const { planId, isCustom, customPriceMonthly, serviceIds, extraServiceIds, renewsAt } = opts
+  const { planId, isCustom, serviceIds, extraServiceIds, renewsAt } = opts
 
   let subServices: { serviceId: string; isExtra: boolean }[] = []
+  let calcMonthly = 0
+  let calcSetup   = 0
 
   if (isCustom) {
     // Pla personalitzat: tots els serveis seleccionats
-    subServices = (serviceIds ?? []).map(serviceId => ({ serviceId, isExtra: false }))
+    const ids = serviceIds ?? []
+    subServices = ids.map(serviceId => ({ serviceId, isExtra: false }))
+    if (ids.length > 0) {
+      const svcs = await prisma.service.findMany({ where: { id: { in: ids } } })
+      calcMonthly = svcs.reduce((a, s) => a + Number(s.monthlyPrice), 0)
+      calcSetup   = svcs.reduce((a, s) => a + Number(s.setupPrice),   0)
+    }
   } else if (planId) {
     // Pla base: copiar serveis del pla
-    const planServices = await prisma.planService.findMany({ where: { planId } })
+    const planServices = await prisma.planService.findMany({
+      where:   { planId },
+      include: { service: true },
+    })
     subServices = planServices.map(ps => ({ serviceId: ps.serviceId, isExtra: false }))
+
+    // Preu mensual base del pla
+    const plan = await prisma.plan.findUnique({ where: { id: planId } })
+    calcMonthly = Number(plan?.priceMonthly ?? 0)
+
     // Afegir serveis extra
-    const extras = (extraServiceIds ?? []).filter(
+    const extraIds = (extraServiceIds ?? []).filter(
       id => !subServices.some(s => s.serviceId === id)
     )
-    subServices = [...subServices, ...extras.map(serviceId => ({ serviceId, isExtra: true }))]
+    if (extraIds.length > 0) {
+      const extras = await prisma.service.findMany({ where: { id: { in: extraIds } } })
+      calcMonthly += extras.reduce((a, s) => a + Number(s.monthlyPrice), 0)
+      calcSetup    = extras.reduce((a, s) => a + Number(s.setupPrice),   0)
+      subServices  = [...subServices, ...extraIds.map(serviceId => ({ serviceId, isExtra: true }))]
+    }
   }
 
   return {
-    planId:             isCustom ? null : planId,
-    status:             'ACTIVE' as const,
+    planId:      isCustom ? null : planId,
+    status:      'ACTIVE' as const,
     renewsAt,
-    isCustom:           isCustom ?? false,
-    customPriceMonthly: customPriceMonthly ?? null,
-    services:           { create: subServices },
+    isCustom:    isCustom ?? false,
+    // Usar preu de l'admin si l'ha modificat, si no el calculat
+    priceMonthly: opts.priceMonthly ?? calcMonthly,
+    priceSetup:   opts.priceSetup   ?? calcSetup,
+    services:    { create: subServices },
   }
 }
 

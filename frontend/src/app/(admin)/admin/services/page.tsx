@@ -15,9 +15,11 @@ const PLAN_COLORS: Record<string, string> = {
 }
 
 const schema = z.object({
-  name:        z.string().min(2, 'Mínim 2 caràcters'),
-  slug:        z.string().min(2).regex(/^[a-z0-9-]+$/, 'Minúscules, números i guions'),
-  description: z.string().optional(),
+  name:         z.string().min(2, 'Mínim 2 caràcters'),
+  slug:         z.string().min(2).regex(/^[a-z0-9-]+$/, 'Minúscules, números i guions'),
+  description:  z.string().optional(),
+  setupPrice:   z.coerce.number().min(0).default(0),
+  monthlyPrice: z.coerce.number().min(0).default(0),
 })
 type FormData = z.infer<typeof schema>
 
@@ -27,9 +29,11 @@ function ServiceForm({ service, onClose }: { service?: Service; onClose: () => v
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
-      name:        service?.name        ?? '',
-      slug:        service?.slug        ?? '',
-      description: service?.description ?? '',
+      name:         service?.name         ?? '',
+      slug:         service?.slug         ?? '',
+      description:  service?.description  ?? '',
+      setupPrice:   service?.setupPrice   ?? 0,
+      monthlyPrice: service?.monthlyPrice ?? 0,
     },
   })
   const onSubmit = async (data: FormData) => {
@@ -55,6 +59,16 @@ function ServiceForm({ service, onClose }: { service?: Service; onClose: () => v
           <div>
             <label className="form-label">Descripció</label>
             <textarea className="form-input h-20 resize-none" {...register('description')} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="form-label">Preu setup (€)</label>
+              <input className="form-input" type="number" min="0" step="0.01" {...register('setupPrice')} />
+            </div>
+            <div>
+              <label className="form-label">Preu mensual (€)</label>
+              <input className="form-input" type="number" min="0" step="0.01" {...register('monthlyPrice')} />
+            </div>
           </div>
           <div className="flex gap-3 pt-2">
             <button type="submit" className="btn-primary text-xs" disabled={isSubmitting}>
@@ -104,9 +118,12 @@ export default function ServicesPage() {
               <div key={s.id} className="card p-4 flex items-center gap-4">
                 <div className="flex-1">
                   <p className="font-rajdhani font-semibold text-[var(--text)]">{s.name}</p>
-                  {s.description && (
-                    <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">{s.description}</p>
-                  )}
+                  <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">
+                    {s.setupPrice > 0 && `Setup: ${s.setupPrice}€`}
+                    {s.setupPrice > 0 && s.monthlyPrice > 0 && ' · '}
+                    {s.monthlyPrice > 0 && `Mensual: ${s.monthlyPrice}€`}
+                    {s.setupPrice === 0 && s.monthlyPrice === 0 && 'Sense preu configurat'}
+                  </p>
                 </div>
                 <div className="flex gap-1 flex-wrap justify-end">
                   {(s.planServices ?? []).map(ps => (

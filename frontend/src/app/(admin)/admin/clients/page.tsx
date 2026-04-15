@@ -95,9 +95,10 @@ export default function ClientsPage() {
                             ) : (
                               <span className="badge">{activeSub.plan?.name}</span>
                             )}
-                            {activeSub.customPriceMonthly && (
+                            {activeSub.priceMonthly > 0 && (
                               <p className="font-mono text-[10px] text-[#FF6B00] mt-0.5">
-                                {activeSub.customPriceMonthly}€/mes
+                                {activeSub.priceMonthly}€/mes
+                                {activeSub.priceSetup > 0 && ` · ${activeSub.priceSetup}€ setup`}
                               </p>
                             )}
                             {activeSub.services.filter(s => s.isExtra).length > 0 && (

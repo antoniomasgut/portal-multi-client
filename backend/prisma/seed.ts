@@ -4,19 +4,21 @@ import bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 
 // ── Definició de serveis ───────────────────────────────────────────────
+// setupPrice = cost d'instal·lació / posada en marxa (únic)
+// monthlyPrice = cost de manteniment mensual recurrent
 const SERVICES = [
-  { slug: 'whatsapp-bot',        name: 'WhatsApp bot 24/7',         description: 'Bot de WhatsApp amb IA per atendre clients les 24h' },
-  { slug: 'landing-page-ia',     name: 'Landing page IA',           description: 'Pàgina de presentació generada amb intel·ligència artificial' },
-  { slug: 'gestio-domini',       name: 'Gestió de domini',          description: 'Alta i gestió del nom de domini del client' },
-  { slug: 'informes-mensuals',   name: 'Informes mensuals',         description: 'Informe de rendiment i estadístiques cada mes' },
-  { slug: 'informes-setmanals',  name: 'Informes setmanals',        description: 'Informe de rendiment i estadístiques cada setmana' },
-  { slug: 'automatitzacions',    name: 'Automatitzacions (n8n)',     description: 'Fluxos d\'automatització personalitzats amb n8n' },
-  { slug: 'acces-api',           name: 'Accés API',                 description: 'Accés a l\'API per integrar amb sistemes externs' },
-  { slug: 'suport-email',        name: 'Suport per email',          description: 'Suport tècnic per correu electrònic' },
-  { slug: 'suport-prioritari',   name: 'Suport prioritari',         description: 'Suport tècnic amb temps de resposta garantit de 4h' },
-  { slug: 'suport-telefonic',    name: 'Suport telefònic',          description: 'Suport tècnic per telèfon en horari laboral' },
-  { slug: 'account-manager',     name: 'Account manager dedicat',   description: 'Responsable de compte dedicat exclusivament al client' },
-  { slug: 'sla-99',              name: 'SLA 99.9%',                 description: 'Acord de nivell de servei amb disponibilitat garantida del 99.9%' },
+  { slug: 'whatsapp-bot',       name: 'WhatsApp bot 24/7',       description: 'Bot de WhatsApp amb IA per atendre clients les 24h',                    setupPrice: 200, monthlyPrice: 29 },
+  { slug: 'landing-page-ia',    name: 'Landing page IA',         description: 'Pàgina de presentació generada amb intel·ligència artificial',          setupPrice: 300, monthlyPrice: 15 },
+  { slug: 'gestio-domini',      name: 'Gestió de domini',        description: 'Alta i gestió del nom de domini del client',                             setupPrice:  20, monthlyPrice:  5 },
+  { slug: 'informes-mensuals',  name: 'Informes mensuals',       description: 'Informe de rendiment i estadístiques cada mes',                         setupPrice:   0, monthlyPrice: 10 },
+  { slug: 'informes-setmanals', name: 'Informes setmanals',      description: 'Informe de rendiment i estadístiques cada setmana',                     setupPrice:   0, monthlyPrice: 20 },
+  { slug: 'automatitzacions',   name: 'Automatitzacions (n8n)',  description: 'Fluxos d\'automatització personalitzats amb n8n',                       setupPrice: 150, monthlyPrice: 25 },
+  { slug: 'acces-api',          name: 'Accés API',               description: 'Accés a l\'API per integrar amb sistemes externs',                      setupPrice: 100, monthlyPrice: 20 },
+  { slug: 'suport-email',       name: 'Suport per email',        description: 'Suport tècnic per correu electrònic',                                   setupPrice:   0, monthlyPrice: 10 },
+  { slug: 'suport-prioritari',  name: 'Suport prioritari',       description: 'Suport tècnic amb temps de resposta garantit de 4h',                    setupPrice:   0, monthlyPrice: 20 },
+  { slug: 'suport-telefonic',   name: 'Suport telefònic',        description: 'Suport tècnic per telèfon en horari laboral',                           setupPrice:   0, monthlyPrice: 30 },
+  { slug: 'account-manager',    name: 'Account manager dedicat', description: 'Responsable de compte dedicat exclusivament al client',                  setupPrice:   0, monthlyPrice: 100 },
+  { slug: 'sla-99',             name: 'SLA 99.9%',               description: 'Acord de nivell de servei amb disponibilitat garantida del 99.9%',      setupPrice:   0, monthlyPrice: 50 },
 ]
 
 // Serveis per pla (acumulatius: cada pla inclou els del pla anterior)

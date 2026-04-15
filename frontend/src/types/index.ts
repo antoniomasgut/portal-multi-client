@@ -1,9 +1,11 @@
 export interface Service {
-  id:          string
-  name:        string
-  slug:        string
-  description: string | null
-  isActive:    boolean
+  id:           string
+  name:         string
+  slug:         string
+  description:  string | null
+  setupPrice:   number
+  monthlyPrice: number
+  isActive:     boolean
   planServices?: { plan: { id: string; name: string; slug: string } }[]
 }
 
@@ -29,14 +31,15 @@ export interface SubscriptionService {
 }
 
 export interface Subscription {
-  id:                 string
-  status:             'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'TRIAL'
-  startDate:          string
-  renewsAt:           string | null
-  isCustom:           boolean
-  customPriceMonthly: number | null
-  plan:               Plan | null
-  services:           SubscriptionService[]
+  id:           string
+  status:       'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'TRIAL'
+  startDate:    string
+  renewsAt:     string | null
+  isCustom:     boolean
+  priceMonthly: number
+  priceSetup:   number
+  plan:         Plan | null
+  services:     SubscriptionService[]
 }
 
 export interface Client {

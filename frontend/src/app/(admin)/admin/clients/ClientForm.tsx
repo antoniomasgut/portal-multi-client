@@ -42,13 +42,13 @@ export default function ClientForm({ client, onClose }: Props) {
   const initPlanMode = activeSub?.isCustom ? 'custom' : (activeSub?.plan?.id ?? '')
   const initExtras   = activeSub?.services.filter(s => s.isExtra).map(s => s.serviceId) ?? []
   const initCustom   = activeSub?.services.filter(s => !s.isExtra).map(s => s.serviceId) ?? []
-  const initPrice    = activeSub?.customPriceMonthly?.toString() ?? ''
 
-  const [planMode, setPlanMode]         = useState(initPlanMode)
-  const [extraIds, setExtraIds]         = useState<string[]>(initExtras)
-  const [customIds, setCustomIds]       = useState<string[]>(initCustom)
-  const [customPrice, setCustomPrice]   = useState(initPrice)
-  const [submitError, setSubmitError]   = useState('')
+  const [planMode, setPlanMode]           = useState(initPlanMode)
+  const [extraIds, setExtraIds]           = useState<string[]>(initExtras)
+  const [customIds, setCustomIds]         = useState<string[]>(initCustom)
+  const [priceMonthly, setPriceMonthly]   = useState(activeSub?.priceMonthly?.toString() ?? '')
+  const [priceSetup, setPriceSetup]       = useState(activeSub?.priceSetup?.toString() ?? '')
+  const [submitError, setSubmitError]     = useState('')
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -76,10 +76,29 @@ export default function ClientForm({ client, onClose }: Props) {
     ])
   )
 
-  const toggleExtra  = (id: string) =>
-    setExtraIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
-  const toggleCustom = (id: string) =>
-    setCustomIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  const calcPrices = (ids: string[], baseMonthly = 0, baseSetup = 0) => {
+    const selected = services.filter(s => ids.includes(s.id))
+    const monthly  = baseMonthly + selected.reduce((a, s) => a + Number(s.monthlyPrice), 0)
+    const setup    = baseSetup   + selected.reduce((a, s) => a + Number(s.setupPrice),   0)
+    return { monthly, setup }
+  }
+
+  const toggleExtra = (id: string) => {
+    const next    = extraIds.includes(id) ? extraIds.filter(x => x !== id) : [...extraIds, id]
+    const base    = selectedPlan ? Number(selectedPlan.priceMonthly) : 0
+    const { monthly, setup } = calcPrices(next, base, 0)
+    setExtraIds(next)
+    setPriceMonthly(monthly.toString())
+    setPriceSetup(setup.toString())
+  }
+
+  const toggleCustom = (id: string) => {
+    const next = customIds.includes(id) ? customIds.filter(x => x !== id) : [...customIds, id]
+    const { monthly, setup } = calcPrices(next)
+    setCustomIds(next)
+    setPriceMonthly(monthly.toString())
+    setPriceSetup(setup.toString())
+  }
 
   const onSubmit = async (data: FormData) => {
     setSubmitError('')
@@ -88,14 +107,17 @@ export default function ClientForm({ client, onClose }: Props) {
 
       if (isCustom) {
         if (customIds.length === 0) { setSubmitError('Selecciona almenys un servei'); return }
-        if (!customPrice)           { setSubmitError('Introdueix el preu mensual');   return }
+        if (!priceMonthly)          { setSubmitError('Introdueix el preu mensual');   return }
       }
 
+      const pm = priceMonthly ? parseFloat(priceMonthly) : undefined
+      const ps = priceSetup   ? parseFloat(priceSetup)   : undefined
+
       const planPayload =
-        planMode === ''      ? {} :
-        isCustom             ? { isCustom: true as const, customPriceMonthly: parseFloat(customPrice), serviceIds: customIds } :
-        extraIds.length > 0  ? { planId: planMode, extraServiceIds: extraIds, customPriceMonthly: customPrice ? parseFloat(customPrice) : undefined } :
-                               { planId: planMode }
+        planMode === ''     ? {} :
+        isCustom            ? { isCustom: true as const, priceMonthly: pm ?? 0, priceSetup: ps ?? 0, serviceIds: customIds } :
+        extraIds.length > 0 ? { planId: planMode, extraServiceIds: extraIds, priceMonthly: pm, priceSetup: ps } :
+                              { planId: planMode, priceMonthly: pm, priceSetup: ps }
 
       if (isEdit) await updateClient.mutateAsync({ ...data, ...planPayload })
       else        await createClient.mutateAsync({ ...data, ...planPayload })
@@ -176,7 +198,22 @@ export default function ClientForm({ client, onClose }: Props) {
             <select
               className="form-input"
               value={planMode}
-              onChange={e => { setPlanMode(e.target.value); setExtraIds([]) }}
+              onChange={e => {
+                const newPlan = plans.find(p => p.id === e.target.value)
+                setPlanMode(e.target.value)
+                setExtraIds([])
+                setCustomIds([])
+                if (newPlan) {
+                  setPriceMonthly(Number(newPlan.priceMonthly).toString())
+                  setPriceSetup('0')
+                } else if (e.target.value === 'custom') {
+                  setPriceMonthly('0')
+                  setPriceSetup('0')
+                } else {
+                  setPriceMonthly('')
+                  setPriceSetup('')
+                }
+              }}
             >
               <option value="">— Sense pla assignat —</option>
               {plans.map(p => (
@@ -219,18 +256,13 @@ export default function ClientForm({ client, onClose }: Props) {
                       />
                     ))}
                   </div>
-                  {extraIds.length > 0 && (
-                    <div className="mt-3">
-                      <label className="form-label">Preu mensual total amb extras (€)</label>
-                      <input
-                        className="form-input max-w-[180px]"
-                        type="number" min="1" step="0.01"
-                        placeholder={selectedPlan.priceMonthly.toString()}
-                        value={customPrice}
-                        onChange={e => setCustomPrice(e.target.value)}
-                      />
-                    </div>
-                  )}
+                  <PriceFields
+                    priceMonthly={priceMonthly}
+                    priceSetup={priceSetup}
+                    onChangeMonthly={setPriceMonthly}
+                    onChangeSetup={setPriceSetup}
+                    showAlways={extraIds.length > 0}
+                  />
                 </>
               )}
             </div>
@@ -242,15 +274,6 @@ export default function ClientForm({ client, onClose }: Props) {
               <p className="font-mono text-[10px] tracking-[3px] text-[#FF6B00] uppercase">
                 Pla personalitzat — selecciona serveis
               </p>
-              <div>
-                <label className="form-label">Preu mensual (€) *</label>
-                <input
-                  className="form-input max-w-[180px]"
-                  type="number" min="1" step="0.01" placeholder="0.00"
-                  value={customPrice}
-                  onChange={e => setCustomPrice(e.target.value)}
-                />
-              </div>
               <div className="grid grid-cols-1 gap-1">
                 {services.map(s => (
                   <ServiceCheckbox
@@ -267,6 +290,13 @@ export default function ClientForm({ client, onClose }: Props) {
                   {customIds.length} servei{customIds.length !== 1 ? 's' : ''} seleccionat{customIds.length !== 1 ? 's' : ''}
                 </p>
               )}
+              <PriceFields
+                priceMonthly={priceMonthly}
+                priceSetup={priceSetup}
+                onChangeMonthly={setPriceMonthly}
+                onChangeSetup={setPriceSetup}
+                showAlways
+              />
             </div>
           )}
 
@@ -281,6 +311,48 @@ export default function ClientForm({ client, onClose }: Props) {
         </form>
       </div>
     </main>
+  )
+}
+
+// ── Camps de preu editables ────────────────────────────────────────────
+function PriceFields({ priceMonthly, priceSetup, onChangeMonthly, onChangeSetup, showAlways }: {
+  priceMonthly:    string
+  priceSetup:      string
+  onChangeMonthly: (v: string) => void
+  onChangeSetup:   (v: string) => void
+  showAlways?:     boolean
+}) {
+  if (!showAlways && !priceMonthly && !priceSetup) return null
+  return (
+    <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-[var(--border)]">
+      <div>
+        <label className="form-label">
+          Setup (€)
+          <span className="text-[var(--text-muted)] font-normal ml-1">(únic)</span>
+        </label>
+        <input
+          className="form-input"
+          type="number" min="0" step="0.01" placeholder="0.00"
+          value={priceSetup}
+          onChange={e => onChangeSetup(e.target.value)}
+        />
+      </div>
+      <div>
+        <label className="form-label">
+          Mensual (€)
+          <span className="text-[var(--text-muted)] font-normal ml-1">(recurrent)</span>
+        </label>
+        <input
+          className="form-input"
+          type="number" min="0" step="0.01" placeholder="0.00"
+          value={priceMonthly}
+          onChange={e => onChangeMonthly(e.target.value)}
+        />
+      </div>
+      <p className="col-span-2 font-mono text-[10px] text-[var(--text-muted)]">
+        Preus calculats automàticament. Pots modificar-los lliurement.
+      </p>
+    </div>
   )
 }
 
@@ -299,6 +371,11 @@ function ServiceCheckbox({ service, checked, onChange, planSlugs }: {
     }`}>
       <input type="checkbox" className="accent-[#FF6B00]" checked={checked} onChange={onChange} />
       <span className="font-rajdhani text-sm text-[var(--text)] flex-1">{service.name}</span>
+      <span className="font-mono text-[10px] text-[var(--text-muted)] whitespace-nowrap">
+        {service.setupPrice > 0 && `${service.setupPrice}€ setup`}
+        {service.setupPrice > 0 && service.monthlyPrice > 0 && ' · '}
+        {service.monthlyPrice > 0 && `${service.monthlyPrice}€/mes`}
+      </span>
       <div className="flex gap-1">
         {planSlugs.map(slug => {
           const badge = PLAN_BADGES[slug]
