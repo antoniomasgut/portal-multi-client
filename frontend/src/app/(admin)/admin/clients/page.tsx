@@ -89,7 +89,13 @@ export default function ClientsPage() {
                       <td className="py-3 pr-4 font-rajdhani text-[var(--text-muted)]">{client.contactName}</td>
                       <td className="py-3 pr-4">
                         {activeSub ? (
-                          <span className="badge">{activeSub.plan.name}</span>
+                          activeSub.isCustom ? (
+                            <span className="badge border-[#FF6B00] text-[#FF6B00]">
+                              Personalitzat · {activeSub.customPriceMonthly}€
+                            </span>
+                          ) : (
+                            <span className="badge">{activeSub.plan?.name}</span>
+                          )
                         ) : (
                           <span className="font-mono text-[10px] text-[var(--text-muted)]">—</span>
                         )}

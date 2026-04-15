@@ -31,49 +31,61 @@ export const clientService = {
   },
 
   async create(data: {
-    companyName: string
-    contactName: string
-    contactEmail: string
-    contactPhone?: string
-    nif?: string
-    address?: string
-    domain?: string
-    notes?: string
-    planId?: string
+    companyName:        string
+    contactName:        string
+    contactEmail:       string
+    contactPhone?:      string
+    nif?:               string
+    address?:           string
+    domain?:            string
+    notes?:             string
+    planId?:            string
+    isCustom?:          boolean
+    customPriceMonthly?: number
+    customFeatures?:    string[]
   }) {
-    const { planId, ...clientData } = data
+    const { planId, isCustom, customPriceMonthly, customFeatures, ...clientData } = data
+    const hasPlan = planId || isCustom
+    const renewsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     return prisma.client.create({
       data: {
         ...clientData,
-        ...(planId && {
+        ...(hasPlan && {
           subscriptions: {
             create: {
-              planId,
-              status:   'ACTIVE',
-              renewsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+              planId:             isCustom ? null : planId,
+              status:             'ACTIVE',
+              renewsAt,
+              isCustom:           isCustom ?? false,
+              customPriceMonthly: customPriceMonthly,
+              customFeatures:     customFeatures ?? [],
             },
           },
         }),
       },
-      include: {
-        subscriptions: { include: { plan: true } },
-      },
+      include: { subscriptions: { include: { plan: true } } },
     })
   },
 
   async update(id: string, data: Partial<{
-    companyName: string
-    contactName: string
-    contactEmail: string
-    contactPhone: string
-    nif: string
-    address: string
-    domain: string
-    notes: string
-    planId: string
+    companyName:        string
+    contactName:        string
+    contactEmail:       string
+    contactPhone:       string
+    nif:                string
+    address:            string
+    domain:             string
+    notes:              string
+    planId:             string
+    isCustom:           boolean
+    customPriceMonthly: number
+    customFeatures:     string[]
   }>) {
-    const { planId, ...clientData } = data
-    if (planId) await clientService.assignPlan(id, planId)
+    const { planId, isCustom, customPriceMonthly, customFeatures, ...clientData } = data
+    const changingPlan = planId || isCustom
+    if (changingPlan) {
+      await clientService.assignPlan(id, { planId, isCustom, customPriceMonthly, customFeatures })
+    }
     return prisma.client.update({
       where:   { id },
       data:    clientData,
@@ -88,19 +100,27 @@ export const clientService = {
     })
   },
 
-  async assignPlan(clientId: string, planId: string) {
+  async assignPlan(clientId: string, opts: {
+    planId?:             string
+    isCustom?:           boolean
+    customPriceMonthly?: number
+    customFeatures?:     string[]
+  }) {
     // Cancel·lar subscripció activa anterior
     await prisma.subscription.updateMany({
       where: { clientId, status: 'ACTIVE' },
       data:  { status: 'CANCELLED', cancelledAt: new Date() },
     })
-    // Crear nova subscripció
+    const renewsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     return prisma.subscription.create({
       data: {
         clientId,
-        planId,
-        status:   'ACTIVE',
-        renewsAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        planId:             opts.isCustom ? null : opts.planId,
+        status:             'ACTIVE',
+        renewsAt,
+        isCustom:           opts.isCustom ?? false,
+        customPriceMonthly: opts.customPriceMonthly,
+        customFeatures:     opts.customFeatures ?? [],
       },
       include: { plan: true },
     })

@@ -42,15 +42,18 @@ export function useCreateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: {
-      companyName:  string
-      contactName:  string
-      contactEmail: string
-      contactPhone?: string
-      nif?:          string
-      address?:      string
-      domain?:       string
-      notes?:        string
-      planId?:       string
+      companyName:         string
+      contactName:         string
+      contactEmail:        string
+      contactPhone?:       string
+      nif?:                string
+      address?:            string
+      domain?:             string
+      notes?:              string
+      planId?:             string
+      isCustom?:           boolean
+      customPriceMonthly?: number
+      customFeatures?:     string[]
     }) => api.post('/api/clients', data).then(r => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
   })
@@ -59,8 +62,12 @@ export function useCreateClient() {
 export function useUpdateClient(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<Omit<Client, 'id' | 'createdAt' | 'subscriptions' | '_count'>> & { planId?: string }) =>
-      api.patch(`/api/clients/${id}`, data).then(r => r.data.data),
+    mutationFn: (data: Partial<Omit<Client, 'id' | 'createdAt' | 'subscriptions' | '_count'>> & {
+      planId?:             string
+      isCustom?:           boolean
+      customPriceMonthly?: number
+      customFeatures?:     string[]
+    }) => api.patch(`/api/clients/${id}`, data).then(r => r.data.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['clients'] })
       qc.invalidateQueries({ queryKey: ['clients', id] })

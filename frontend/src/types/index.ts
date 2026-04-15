@@ -10,11 +10,14 @@ export interface Plan {
 }
 
 export interface Subscription {
-  id:        string
-  status:    'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'TRIAL'
-  startDate: string
-  renewsAt:  string | null
-  plan:      Plan
+  id:                 string
+  status:             'ACTIVE' | 'CANCELLED' | 'EXPIRED' | 'TRIAL'
+  startDate:          string
+  renewsAt:           string | null
+  isCustom:           boolean
+  customPriceMonthly: number | null
+  customFeatures:     string[]
+  plan:               Plan | null
 }
 
 export interface Client {

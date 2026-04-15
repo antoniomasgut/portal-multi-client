@@ -91,8 +91,8 @@ export const deleteClient = async (req: Request, res: Response, next: NextFuncti
 
 export const assignPlan = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { planId }      = assignPlanSchema.parse(req.body)
-    const subscription    = await clientService.assignPlan(req.params.id, planId)
+    const parsed       = assignPlanSchema.parse(req.body)
+    const subscription = await clientService.assignPlan(req.params.id, parsed)
 
     await prisma.auditLog.create({
       data: {
@@ -102,7 +102,7 @@ export const assignPlan = async (req: Request, res: Response, next: NextFunction
         entityType: 'Subscription',
         entityId:   subscription.id,
         ip:         req.ip,
-        details:    { planId },
+        details:    parsed as any,
       },
     })
 

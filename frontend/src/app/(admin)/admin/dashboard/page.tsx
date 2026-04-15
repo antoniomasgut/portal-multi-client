@@ -45,7 +45,12 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
             { label: 'CLIENTS',  value: String(clients.length) },
-            { label: 'MRR',      value: `${clients.reduce((acc, c) => acc + (c.subscriptions.find(s => s.status === 'ACTIVE')?.plan.priceMonthly ?? 0), 0)}€` },
+            { label: 'MRR',      value: `${clients.reduce((acc, c) => {
+              const sub = c.subscriptions.find(s => s.status === 'ACTIVE')
+              if (!sub) return acc
+              const price = sub.isCustom ? (sub.customPriceMonthly ?? 0) : (sub.plan?.priceMonthly ?? 0)
+              return acc + Number(price)
+            }, 0)}€` },
             { label: 'ACTIUS',   value: String(clients.filter(c => c.subscriptions.some(s => s.status === 'ACTIVE')).length) },
             { label: 'ALERTES',  value: '0' },
           ].map(s => (
