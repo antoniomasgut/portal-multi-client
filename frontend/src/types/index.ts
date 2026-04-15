@@ -1,3 +1,16 @@
+export interface Service {
+  id:          string
+  name:        string
+  slug:        string
+  description: string | null
+  isActive:    boolean
+  planServices?: { plan: { id: string; name: string; slug: string } }[]
+}
+
+export interface PlanService {
+  service: Service
+}
+
 export interface Plan {
   id:           string
   name:         string
@@ -5,8 +18,14 @@ export interface Plan {
   priceMonthly: number
   maxDomains:   number
   maxUsers:     number
-  features:     string[]
   isActive:     boolean
+  services:     PlanService[]
+}
+
+export interface SubscriptionService {
+  serviceId: string
+  isExtra:   boolean
+  service:   Service
 }
 
 export interface Subscription {
@@ -16,8 +35,8 @@ export interface Subscription {
   renewsAt:           string | null
   isCustom:           boolean
   customPriceMonthly: number | null
-  customFeatures:     string[]
   plan:               Plan | null
+  services:           SubscriptionService[]
 }
 
 export interface Client {

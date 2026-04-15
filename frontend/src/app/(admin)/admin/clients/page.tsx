@@ -89,13 +89,23 @@ export default function ClientsPage() {
                       <td className="py-3 pr-4 font-rajdhani text-[var(--text-muted)]">{client.contactName}</td>
                       <td className="py-3 pr-4">
                         {activeSub ? (
-                          activeSub.isCustom ? (
-                            <span className="badge border-[#FF6B00] text-[#FF6B00]">
-                              Personalitzat · {activeSub.customPriceMonthly}€
-                            </span>
-                          ) : (
-                            <span className="badge">{activeSub.plan?.name}</span>
-                          )
+                          <div>
+                            {activeSub.isCustom ? (
+                              <span className="badge border-[#FF6B00] text-[#FF6B00]">Personalitzat</span>
+                            ) : (
+                              <span className="badge">{activeSub.plan?.name}</span>
+                            )}
+                            {activeSub.customPriceMonthly && (
+                              <p className="font-mono text-[10px] text-[#FF6B00] mt-0.5">
+                                {activeSub.customPriceMonthly}€/mes
+                              </p>
+                            )}
+                            {activeSub.services.filter(s => s.isExtra).length > 0 && (
+                              <p className="font-mono text-[9px] text-[var(--text-muted)] mt-0.5">
+                                +{activeSub.services.filter(s => s.isExtra).length} extra{activeSub.services.filter(s => s.isExtra).length !== 1 ? 's' : ''}
+                              </p>
+                            )}
+                          </div>
                         ) : (
                           <span className="font-mono text-[10px] text-[var(--text-muted)]">—</span>
                         )}

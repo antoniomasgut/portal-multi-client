@@ -74,12 +74,17 @@ export default function AdminDashboard() {
               Gestionar clients i subscripcions
             </p>
           </button>
+          <button
+            className="card p-5 text-left hover:border-[#FF6B00] transition-colors group"
+            onClick={() => router.push('/admin/services')}
+          >
+            <p className="font-mono text-[10px] tracking-[3px] text-[#FF6B00] uppercase mb-2">SERVEIS</p>
+            <p className="font-rajdhani text-[var(--text-muted)] group-hover:text-[var(--text)] text-sm">
+              Gestionar catàleg de serveis
+            </p>
+          </button>
           <div className="card p-5 opacity-40 cursor-not-allowed">
             <p className="font-mono text-[10px] tracking-[3px] text-[var(--text-muted)] uppercase mb-2">FACTURACIÓ</p>
-            <p className="font-rajdhani text-[var(--text-muted)] text-sm">Pròximament</p>
-          </div>
-          <div className="card p-5 opacity-40 cursor-not-allowed">
-            <p className="font-mono text-[10px] tracking-[3px] text-[var(--text-muted)] uppercase mb-2">AUTOMATITZACIONS</p>
             <p className="font-rajdhani text-[var(--text-muted)] text-sm">Pròximament</p>
           </div>
         </div>

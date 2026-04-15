@@ -5,8 +5,9 @@ import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
 
-import authRouter    from './routes/auth'
-import clientsRouter from './routes/clients'
+import authRouter     from './routes/auth'
+import clientsRouter  from './routes/clients'
+import servicesRouter from './routes/services'
 import { errorHandler } from './middleware/errorHandler'
 
 const app  = express()
@@ -37,8 +38,9 @@ app.get('/health', (_req, res) => {
 })
 
 // ── Rutes de l'API ──────────────────────────────────────────────────
-app.use('/api/auth',    authRouter)
-app.use('/api/clients', clientsRouter)
+app.use('/api/auth',     authRouter)
+app.use('/api/clients',  clientsRouter)
+app.use('/api/services', servicesRouter)
 // Pròxims mòduls:
 // app.use('/api/billing',  billingRouter)    // Mòdul 4
 

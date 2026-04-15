@@ -3,6 +3,11 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../utils/api'
 import type { Client, Plan } from '../types'
 
+type PlanPayload =
+  | { planId: string; extraServiceIds?: string[]; customPriceMonthly?: number }
+  | { isCustom: true; serviceIds: string[]; customPriceMonthly: number }
+  | {}
+
 // ── Plans ────────────────────────────────────────────────────────────────
 
 export function usePlans() {
@@ -42,19 +47,15 @@ export function useCreateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (data: {
-      companyName:         string
-      contactName:         string
-      contactEmail:        string
-      contactPhone?:       string
-      nif?:                string
-      address?:            string
-      domain?:             string
-      notes?:              string
-      planId?:             string
-      isCustom?:           boolean
-      customPriceMonthly?: number
-      customFeatures?:     string[]
-    }) => api.post('/api/clients', data).then(r => r.data.data),
+      companyName:  string
+      contactName:  string
+      contactEmail: string
+      contactPhone?: string
+      nif?:          string
+      address?:      string
+      domain?:       string
+      notes?:        string
+    } & PlanPayload) => api.post('/api/clients', data).then(r => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
   })
 }
@@ -62,12 +63,8 @@ export function useCreateClient() {
 export function useUpdateClient(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<Omit<Client, 'id' | 'createdAt' | 'subscriptions' | '_count'>> & {
-      planId?:             string
-      isCustom?:           boolean
-      customPriceMonthly?: number
-      customFeatures?:     string[]
-    }) => api.patch(`/api/clients/${id}`, data).then(r => r.data.data),
+    mutationFn: (data: Partial<Omit<Client, 'id' | 'createdAt' | 'subscriptions' | '_count'>> & PlanPayload) =>
+      api.patch(`/api/clients/${id}`, data).then(r => r.data.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['clients'] })
       qc.invalidateQueries({ queryKey: ['clients', id] })
@@ -80,14 +77,5 @@ export function useDeleteClient() {
   return useMutation({
     mutationFn: (id: string) => api.delete(`/api/clients/${id}`),
     onSuccess:  () => qc.invalidateQueries({ queryKey: ['clients'] }),
-  })
-}
-
-export function useAssignPlan(clientId: string) {
-  const qc = useQueryClient()
-  return useMutation({
-    mutationFn: (planId: string) =>
-      api.post(`/api/clients/${clientId}/plan`, { planId }).then(r => r.data.data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['clients'] }),
   })
 }
