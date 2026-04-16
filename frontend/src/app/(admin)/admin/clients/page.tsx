@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useClients, useDeleteClient } from '../../../../hooks/useClients'
 import ClientForm from './ClientForm'
+import SetupWizard from './SetupWizard'
 import type { Client } from '../../../../types'
 
 const STATUS_COLORS: Record<string, string> = {
@@ -14,12 +15,22 @@ const STATUS_COLORS: Record<string, string> = {
 export default function ClientsPage() {
   const { data: clients = [], isLoading } = useClients()
   const deleteClient              = useDeleteClient()
-  const [showForm, setShowForm]   = useState(false)
+  const [showForm, setShowForm]     = useState(false)
   const [editClient, setEditClient] = useState<Client | null>(null)
+  const [setupClient, setSetupClient] = useState<Client | null>(null)
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Eliminar el client "${name}"?`)) return
     await deleteClient.mutateAsync(id)
+  }
+
+  if (setupClient) {
+    return (
+      <SetupWizard
+        client={setupClient}
+        onClose={() => setSetupClient(null)}
+      />
+    )
   }
 
   if (showForm || editClient) {
@@ -88,9 +99,16 @@ export default function ClientsPage() {
               >
                 {/* Empresa */}
                 <div>
-                  <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">
-                    {client.companyName}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">
+                      {client.companyName}
+                    </p>
+                    {client.isTest && (
+                      <span className="font-mono text-[8px] tracking-widest px-1.5 py-0.5 border border-[#60a5fa]/40 text-[#60a5fa] bg-[#60a5fa]/10 shrink-0">
+                        TEST
+                      </span>
+                    )}
+                  </div>
                   <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">{client.contactEmail}</p>
                   {client.contactName !== client.companyName && (
                     <p className="font-rajdhani text-[12px] text-[var(--text-muted)]">{client.contactName}</p>
@@ -164,6 +182,13 @@ export default function ClientsPage() {
 
                 {/* Accions */}
                 <div className="flex gap-2 justify-end">
+                  <button
+                    className="font-mono text-[9px] tracking-widest px-2.5 py-1.5 border border-[#FF6B00]/40 text-[#FF6B00] hover:bg-[#FF6B00]/10 transition-colors"
+                    onClick={() => setSetupClient(client)}
+                    title="Flux de configuració"
+                  >
+                    SETUP
+                  </button>
                   <button
                     className="btn-outline text-[9px] px-3 py-1.5"
                     onClick={() => setEditClient(client)}

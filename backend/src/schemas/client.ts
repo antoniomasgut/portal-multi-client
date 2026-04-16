@@ -9,6 +9,7 @@ const clientBaseSchema = z.object({
   address:             z.string().optional(),
   domain:              z.string().optional(),
   notes:               z.string().optional(),
+  isTest:              z.boolean().optional(),
   planId:          z.string().uuid().optional(),
   isCustom:        z.boolean().optional(),
   priceMonthly:    z.number().min(0).optional(),

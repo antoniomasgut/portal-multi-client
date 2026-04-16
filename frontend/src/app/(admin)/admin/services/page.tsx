@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useServices, useCreateService, useUpdateService, useDeleteService } from '../../../../hooks/useServices'
+import { useAllServices, useCreateService, useUpdateService, useToggleService } from '../../../../hooks/useServices'
 import type { Service } from '../../../../types'
 
 const PLAN_STYLES: Record<string, { accent: string; bg: string; label: string }> = {
@@ -53,11 +53,8 @@ function ServiceForm({ service, onClose }: { service?: Service; onClose: () => v
               {service ? service.name : 'Afegir al catàleg'}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="font-mono text-[var(--text-muted)] hover:text-[var(--text)] text-lg leading-none"
-          >
+          <button type="button" onClick={onClose}
+            className="font-mono text-[var(--text-muted)] hover:text-[var(--text)] text-lg leading-none">
             ✕
           </button>
         </div>
@@ -78,11 +75,10 @@ function ServiceForm({ service, onClose }: { service?: Service; onClose: () => v
             <textarea className="form-input h-20 resize-none" {...register('description')} />
           </div>
 
-          {/* Preus */}
           <div>
             <label className="form-label">Preus</label>
             <div className="grid grid-cols-2 gap-3">
-              <div className="relative">
+              <div>
                 <label className="font-mono text-[9px] text-[var(--text-muted)] uppercase tracking-wider block mb-1.5">Setup (únic)</label>
                 <div className="relative">
                   <input className="form-input pr-7" type="number" min="0" step="0.01" {...register('setupPrice')} />
@@ -112,10 +108,13 @@ function ServiceForm({ service, onClose }: { service?: Service; onClose: () => v
 }
 
 export default function ServicesPage() {
-  const { data: services = [], isLoading } = useServices()
-  const deleteService = useDeleteService()
-  const [showForm, setShowForm]   = useState(false)
-  const [editService, setEdit]    = useState<Service | undefined>()
+  const { data: services = [], isLoading } = useAllServices()
+  const toggle     = useToggleService()
+  const [showForm, setShowForm] = useState(false)
+  const [editService, setEdit]  = useState<Service | undefined>()
+
+  const active   = services.filter(s => s.isActive)
+  const inactive = services.filter(s => !s.isActive)
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -127,7 +126,8 @@ export default function ServicesPage() {
           <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">Serveis</h1>
           {!isLoading && (
             <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">
-              {services.length} servei{services.length !== 1 ? 's' : ''} al catàleg
+              {active.length} actiu{active.length !== 1 ? 's' : ''}
+              {inactive.length > 0 && ` · ${inactive.length} inactiu${inactive.length !== 1 ? 's' : ''}`}
             </p>
           )}
         </div>
@@ -167,12 +167,20 @@ export default function ServicesPage() {
                 <div
                   key={s.id}
                   className={`grid grid-cols-[2fr_1fr_1fr_1.5fr_auto] gap-4 px-5 py-4 items-center
-                    hover:bg-[var(--bg-1)] transition-colors
+                    transition-colors
+                    ${s.isActive ? 'hover:bg-[var(--bg-1)]' : 'opacity-40'}
                     ${i < services.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
                 >
                   {/* Nom */}
                   <div>
-                    <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">{s.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-rajdhani font-semibold text-[var(--text)] text-base leading-tight">{s.name}</p>
+                      {!s.isActive && (
+                        <span className="font-mono text-[8px] tracking-widest px-1.5 py-0.5 border border-[var(--border)] text-[var(--text-muted)]">
+                          INACTIU
+                        </span>
+                      )}
+                    </div>
                     <p className="font-mono text-[9px] text-[var(--text-muted)] mt-0.5">{s.slug}</p>
                     {s.description && (
                       <p className="font-rajdhani text-[12px] text-[var(--text-muted)] mt-0.5 line-clamp-1">{s.description}</p>
@@ -217,10 +225,15 @@ export default function ServicesPage() {
                       EDITAR
                     </button>
                     <button
-                      className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1"
-                      onClick={() => deleteService.mutate(s.id)}
+                      className={`font-mono text-[9px] tracking-widest transition-colors px-2 py-1 border ${
+                        s.isActive
+                          ? 'text-[var(--text-muted)] border-[var(--border)] hover:text-[#ff4444] hover:border-[#ff4444]/40'
+                          : 'text-[#4ade80] border-[#4ade80]/40 hover:bg-[#4ade80]/10'
+                      }`}
+                      onClick={() => toggle.mutate(s.id)}
+                      title={s.isActive ? 'Desactivar' : 'Activar'}
                     >
-                      ✕
+                      {s.isActive ? 'OFF' : 'ON'}
                     </button>
                   </div>
                 </div>

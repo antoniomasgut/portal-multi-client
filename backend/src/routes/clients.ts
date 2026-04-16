@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { requireAuth, requireRole } from '../middleware/auth'
 import * as ctrl from '../controllers/client.controller'
+import credentialsRouter from './credentials'
 
 const router = Router()
 
@@ -19,5 +20,8 @@ router.post('/:id/plan',           requireAuth, requireRole('ADMIN'), ctrl.assig
 router.get('/:id/usage',           requireAuth, requireRole('ADMIN'), ctrl.getClientUsage)
 router.patch('/:id/usage',         requireAuth, requireRole('ADMIN'), ctrl.updateClientUsage)
 router.get('/:id/plan-history',    requireAuth, requireRole('ADMIN'), ctrl.getPlanHistoryCtrl)
+
+// Credencials encriptades
+router.use('/:id/credentials', credentialsRouter)
 
 export default router

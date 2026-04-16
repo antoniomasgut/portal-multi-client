@@ -7,6 +7,7 @@ import { useAuthStore } from '../../../store/useAuthStore'
 const NAV_ITEMS = [
   { label: 'DASHBOARD',    href: '/admin/dashboard'  },
   { label: 'CLIENTS',      href: '/admin/clients'    },
+  { label: 'FACTURACIÓ',   href: '/admin/invoices'   },
   { label: 'SERVEIS',      href: '/admin/services'   },
   { label: 'CONFIGURACIÓ', href: '/admin/settings'   },
 ]
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
 const PAGE_TITLES: Record<string, string> = {
   '/admin/dashboard': 'Dashboard',
   '/admin/clients':   'Clients',
+  '/admin/invoices':  'Facturació',
   '/admin/services':  'Serveis',
   '/admin/settings':  'Configuració',
 }

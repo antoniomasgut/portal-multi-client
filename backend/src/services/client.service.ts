@@ -25,7 +25,7 @@ export const clientService = {
         },
         _count: { select: { users: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ isTest: 'asc' }, { createdAt: 'desc' }],
     })
   },
 
@@ -54,6 +54,7 @@ export const clientService = {
     address?:        string
     domain?:         string
     notes?:          string
+    isTest?:         boolean
     planId?:         string
     isCustom?:       boolean
     priceMonthly?:   number

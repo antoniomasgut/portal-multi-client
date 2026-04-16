@@ -6,17 +6,19 @@ export default function AdminDashboard() {
   const router                 = useRouter()
   const { data: clients = [] } = useClients()
 
-  const activeClients = clients.filter(c => c.subscriptions.some(s => s.status === 'ACTIVE'))
-  const mrr = clients.reduce((acc, c) => {
+  const realClients   = clients.filter(c => !c.isTest)
+  const activeClients = realClients.filter(c => c.subscriptions.some(s => s.status === 'ACTIVE'))
+  const mrr = realClients.reduce((acc, c) => {
     const sub = c.subscriptions.find(s => s.status === 'ACTIVE')
     return acc + (sub ? Number(sub.priceMonthly) : 0)
   }, 0)
+  const hasTestClient = clients.some(c => c.isTest)
 
   const stats = [
-    { label: 'CLIENTS TOTALS', value: clients.length,        suffix: '',   color: 'border-l-[#FF6B00]', text: 'text-[#FF6B00]' },
-    { label: 'SUBSCRIPCIONS', value: activeClients.length,   suffix: '',   color: 'border-l-[#4ade80]', text: 'text-[#4ade80]' },
-    { label: 'MRR',           value: mrr,                    suffix: '€',  color: 'border-l-[#60a5fa]', text: 'text-[#60a5fa]' },
-    { label: 'ALERTES',       value: 0,                      suffix: '',   color: 'border-l-[#8888aa]', text: 'text-[var(--text-muted)]' },
+    { label: 'CLIENTS',      value: realClients.length,    suffix: '',  color: 'border-l-[#FF6B00]', text: 'text-[#FF6B00]' },
+    { label: 'SUBSCRIPCIONS', value: activeClients.length, suffix: '',  color: 'border-l-[#4ade80]', text: 'text-[#4ade80]' },
+    { label: 'MRR',           value: mrr,                  suffix: '€', color: 'border-l-[#60a5fa]', text: 'text-[#60a5fa]' },
+    { label: 'ALERTES',       value: 0,                    suffix: '',  color: 'border-l-[#8888aa]', text: 'text-[var(--text-muted)]' },
   ]
 
   const modules = [
@@ -42,16 +44,26 @@ export default function AdminDashboard() {
       active: true,
     },
     {
-      tag: 'PRÒXIMAMENT',
+      tag: 'MÒDUL 4',
       title: 'Facturació',
       desc: 'Generació de factures i seguiment de pagaments',
-      href: '',
-      active: false,
+      href: '/admin/invoices',
+      active: true,
     },
   ]
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
+
+      {/* ── Banner client de prova ──────────────────────────── */}
+      {hasTestClient && (
+        <div className="mb-6 flex items-center gap-3 bg-[var(--bg-2)] border border-[#60a5fa]/30 border-l-2 border-l-[#60a5fa] px-4 py-3">
+          <span className="font-mono text-[9px] tracking-widest px-2 py-0.5 border border-[#60a5fa]/40 text-[#60a5fa] bg-[#60a5fa]/10">TEST</span>
+          <p className="font-mono text-[10px] text-[var(--text-muted)] tracking-wider">
+            Client de prova actiu — no compta per a les estadístiques ni genera factures
+          </p>
+        </div>
+      )}
 
       {/* ── Stats ───────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">

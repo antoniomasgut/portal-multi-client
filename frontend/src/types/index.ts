@@ -53,6 +53,7 @@ export interface Client {
   domain:       string | null
   logoUrl:      string | null
   notes:        string | null
+  isTest:       boolean
   createdAt:    string
   subscriptions: Subscription[]
   _count?: { users: number }

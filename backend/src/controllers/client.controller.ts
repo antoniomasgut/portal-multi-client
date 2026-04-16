@@ -43,6 +43,7 @@ export const createClient = async (req: Request, res: Response, next: NextFuncti
         entityType: 'Client',
         entityId:   client.id,
         ip:         req.ip,
+        isTest:     client.isTest,
         details:    { companyName: client.companyName },
       },
     })
@@ -64,6 +65,7 @@ export const updateClient = async (req: Request, res: Response, next: NextFuncti
         entityType: 'Client',
         entityId:   req.params.id,
         ip:         req.ip,
+        isTest:     client.isTest,
         details:    body as any,
       },
     })
@@ -74,6 +76,7 @@ export const updateClient = async (req: Request, res: Response, next: NextFuncti
 
 export const deleteClient = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const existing = await clientService.findById(req.params.id)
     await clientService.softDelete(req.params.id)
 
     await prisma.auditLog.create({
@@ -83,6 +86,7 @@ export const deleteClient = async (req: Request, res: Response, next: NextFuncti
         entityType: 'Client',
         entityId:   req.params.id,
         ip:         req.ip,
+        isTest:     existing?.isTest ?? false,
       },
     })
 
@@ -93,6 +97,7 @@ export const deleteClient = async (req: Request, res: Response, next: NextFuncti
 export const assignPlan = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed       = assignPlanSchema.parse(req.body)
+    const existing     = await clientService.findById(req.params.id)
     const subscription = await clientService.assignPlan(req.params.id, parsed)
 
     await prisma.auditLog.create({
@@ -103,6 +108,7 @@ export const assignPlan = async (req: Request, res: Response, next: NextFunction
         entityType: 'Subscription',
         entityId:   subscription.id,
         ip:         req.ip,
+        isTest:     existing?.isTest ?? false,
         details:    parsed as any,
       },
     })

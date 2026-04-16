@@ -13,11 +13,27 @@ export function useServices() {
   })
 }
 
+/** Admin: inclou serveis inactius */
+export function useAllServices() {
+  return useQuery<Service[]>({
+    queryKey: ['services', 'all'],
+    queryFn:  async () => {
+      const res = await api.get('/api/services/all')
+      return res.data.data
+    },
+  })
+}
+
 export function useCreateService() {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: { name: string; slug: string; description?: string }) =>
-      api.post('/api/services', data).then(r => r.data.data),
+    mutationFn: (data: {
+      name:         string
+      slug:         string
+      description?: string
+      setupPrice:   number
+      monthlyPrice: number
+    }) => api.post('/api/services', data).then(r => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['services'] }),
   })
 }
@@ -25,9 +41,22 @@ export function useCreateService() {
 export function useUpdateService(id: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (data: Partial<{ name: string; slug: string; description: string }>) =>
-      api.patch(`/api/services/${id}`, data).then(r => r.data.data),
+    mutationFn: (data: Partial<{
+      name:         string
+      slug:         string
+      description:  string
+      setupPrice:   number
+      monthlyPrice: number
+    }>) => api.patch(`/api/services/${id}`, data).then(r => r.data.data),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['services'] }),
+  })
+}
+
+export function useToggleService() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.patch(`/api/services/${id}/toggle`).then(r => r.data.data),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: ['services'] }),
   })
 }
 

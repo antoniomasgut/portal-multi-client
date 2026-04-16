@@ -132,6 +132,37 @@ async function main() {
     console.log(`  Admin ja existeix: ${adminEmail}`)
   }
 
+  // ── Client de prova ──────────────────────────────────────────────────
+  const testClientEmail = 'test@portal.com'
+  const existingTest = await prisma.client.findUnique({ where: { contactEmail: testClientEmail } })
+  if (!existingTest) {
+    const testClient = await prisma.client.create({
+      data: {
+        companyName:  'Client de Prova AMG',
+        contactName:  'Test User',
+        contactEmail: testClientEmail,
+        domain:       'test.portal.local',
+        notes:        'Client especial per testar workflows. No genera factures ni compta per als límits.',
+        isTest:       true,
+        status:       'ACTIVE',
+      },
+    })
+    // Usuari associat al client de prova
+    const testPassword = process.env.TEST_CLIENT_PASSWORD || 'Test1234!'
+    const hashedTest   = await bcrypt.hash(testPassword, 12)
+    await prisma.user.create({
+      data: {
+        email:    testClientEmail,
+        password: hashedTest,
+        role:     'CLIENT',
+        clientId: testClient.id,
+      },
+    })
+    console.log(`  Client de prova creat: ${testClientEmail}`)
+  } else {
+    console.log(`  Client de prova ja existeix: ${testClientEmail}`)
+  }
+
   console.log('Seed completat.')
 }
 

@@ -6,6 +6,9 @@ import { z } from 'zod'
 import { usePlans, useCreateClient, useUpdateClient } from '../../../../hooks/useClients'
 import { useServices } from '../../../../hooks/useServices'
 import type { Client, Service } from '../../../../types'
+import CredentialsPanel from './CredentialsPanel'
+import ConnectionsPanel from './ConnectionsPanel'
+import LandingEditor    from './LandingEditor'
 
 // ── Badge descriptors per pla ────────────────────────────────────────────
 const PLAN_STYLES: Record<string, {
@@ -375,6 +378,39 @@ export default function ClientForm({ client, onClose }: Props) {
               </div>
             )}
           </section>
+
+          {/* ── Micro-Landing (només edició) ─────────────────── */}
+          {isEdit && (
+            <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-1 h-5 bg-[#c084fc]" />
+                <p className="font-mono text-[10px] tracking-[4px] text-[#c084fc] uppercase">Micro-Landing</p>
+              </div>
+              <LandingEditor clientId={client!.id} companyName={client!.companyName} />
+            </section>
+          )}
+
+          {/* ── Connexions OAuth (només edició) ───────────────── */}
+          {isEdit && (
+            <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-1 h-5 bg-[#4ade80]" />
+                <p className="font-mono text-[10px] tracking-[4px] text-[#4ade80] uppercase">Connexions</p>
+              </div>
+              <ConnectionsPanel clientId={client!.id} />
+            </section>
+          )}
+
+          {/* ── Credencials API (només edició) ────────────────── */}
+          {isEdit && (
+            <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-1 h-5 bg-[#8888aa]" />
+                <p className="font-mono text-[10px] tracking-[4px] text-[var(--text-muted)] uppercase">Credencials API</p>
+              </div>
+              <CredentialsPanel clientId={client!.id} />
+            </section>
+          )}
 
           {/* ── Botons ────────────────────────────────────────── */}
           <div className="flex gap-3 pb-8">

@@ -9,6 +9,13 @@ export const listServices = async (_req: Request, res: Response, next: NextFunct
   } catch (err) { next(err) }
 }
 
+export const listAllServices = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const services = await serviceService.listAll()
+    res.json({ success: true, message: 'OK', data: services })
+  } catch (err) { next(err) }
+}
+
 export const createService = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const body    = createServiceSchema.parse(req.body)
@@ -29,5 +36,12 @@ export const deleteService = async (req: Request, res: Response, next: NextFunct
   try {
     await serviceService.delete(req.params.id)
     res.json({ success: true, message: 'Servei eliminat', data: null })
+  } catch (err) { next(err) }
+}
+
+export const toggleService = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const service = await serviceService.toggle(req.params.id)
+    res.json({ success: true, message: 'Estat del servei actualitzat', data: service })
   } catch (err) { next(err) }
 }

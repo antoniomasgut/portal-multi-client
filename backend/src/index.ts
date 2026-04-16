@@ -10,6 +10,10 @@ import clientsRouter  from './routes/clients'
 import servicesRouter from './routes/services'
 import plansRouter    from './routes/plans'
 import settingsRouter from './routes/settings'
+import oauthRouter    from './routes/oauth'
+import invoicesRouter from './routes/invoices'
+import landingRouter  from './routes/landing'
+import portalRouter   from './routes/portal'
 import { errorHandler } from './middleware/errorHandler'
 
 const app  = express()
@@ -51,6 +55,10 @@ app.use('/api/clients',  clientsRouter)
 app.use('/api/services', servicesRouter)
 app.use('/api/plans',    plansRouter)
 app.use('/api/settings', settingsRouter)
+app.use('/api/oauth',    oauthRouter)
+app.use('/api/invoices', invoicesRouter)
+app.use('/api/landing',  landingRouter)
+app.use('/api/portal',   portalRouter)
 // Pròxims mòduls:
 // app.use('/api/billing',  billingRouter)    // Mòdul 4
 
