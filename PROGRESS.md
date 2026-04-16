@@ -1,10 +1,10 @@
 # Progrés del Projecte
-Última actualització: 2026-04-15
+Última actualització: 2026-04-16
 
 ## Resum executiu
 - Fase actual: **1 — MVP**
-- Mòduls completats: 0 / 13 (Fase 1)
-- Pròxim mòdul: **Mòdul 0 — Docker + Caddy**
+- Mòduls completats: **3 / 13** (Fase 1)
+- Pròxim mòdul: **Mòdul 39 — Client de Prova**
 
 ---
 
@@ -14,14 +14,16 @@
 | Mòdul | Data | Notes |
 |-------|------|-------|
 | 0 — Docker + Caddy | 2026-04-15 | docker-compose, Dockerfiles, Caddyfile, .env.example, esqueleto backend/frontend/ai |
+| 1 — Auth + Rols | 2026-04-15 | Login JWT, refresh token HttpOnly cookie, magic link, middleware requireAuth/requireRole, audit log, rate limiting |
+| 2 — Clients + Plans + Polítiques | 2026-04-16 | CRUD clients, plans, serveis, subscripcions, pla personalitzat, preus auto-calculats, polítiques descompte/preus, ClientUsage, historial plans |
 
 ### 🔄 En progrés
 *(cap)*
 
 ### ❌ Pendents — Fase 1 (MVP)
 - [x] Mòdul 0  — Docker + Caddy + Infraestructura
-- [ ] Mòdul 1  — Auth + Rols
-- [ ] Mòdul 2  — Clients + Plans + Polítiques
+- [x] Mòdul 1  — Auth + Rols
+- [x] Mòdul 2  — Clients + Plans + Polítiques
 - [ ] Mòdul 39 — Client de Prova
 - [ ] Mòdul 11 — Storage GCS
 - [ ] Mòdul 3  — Micro-Landing
@@ -54,31 +56,39 @@
 
 ## Sessions recents
 
-### Sessió 2026-04-15
-**Tasca:** Configuració inicial del projecte
-**Generat:**
-- `.claude/agents/agent-backend.md`
-- `.claude/agents/agent-frontend.md`
-- `.claude/agents/agent-database.md`
-- `.claude/agents/agent-design.md`
-- `.claude/agents/agent-storage.md`
-- `.claude/agents/agent-security.md`
-- `.claude/agents/agent-devops.md`
-- `.claude/agents/agent-n8n.md`
-- `.claude/agents/agent-ai.md`
-- `.claude/agents/agent-integration.md`
-- `.claude/agents/agent-tracker.md`
-- `.claude/skills/skill-api-endpoint.md`
-- `.claude/skills/skill-migration.md`
-- `.claude/skills/skill-audit-log.md`
-- `.claude/skills/skill-crud.md`
-- `.claude/skills/skill-storage.md`
-- `.claude/skills/skill-pdf.md`
-- `.claude/skills/skill-notification.md`
-- `.claude/skills/skill-component.md`
-- `.claude/skills/skill-i18n.md`
-- `PROGRESS.md`
+### Sessió 2026-04-16
+**Tasca:** Completar Mòdul 1 i Mòdul 2 + disseny visual admin
 
-**Provat:** —
-**Problemes:** cap
-**Pendent:** Executar Mòdul 0 (Docker + Caddy)
+**Mòdul 1 — Auth (completat)**
+- Login amb JWT (access token + refresh token HttpOnly cookie)
+- Magic link per accés sense contrasenya
+- Middleware `requireAuth` i `requireRole`
+- Registre d'accions a `audit_logs`
+- Rate limiting al login (5 intents/IP/15 min)
+- Fix CORS: accepta qualsevol port localhost en dev
+- Pàgina login amb botó mostrar/ocultar contrasenya
+
+**Mòdul 2 — Clients + Plans (completat)**
+- CRUD complet de clients (empresa, contacte, domini, notes)
+- Plans estàndard (Bàsic 49€, Pro 99€, Premium 199€, Empresarial 499€)
+- Catàleg de 12 serveis amb `setupPrice` i `monthlyPrice`
+- Subscripcions: pla estàndard, serveis extra, pla personalitzat
+- Preus auto-calculats (suma de serveis), modificables per l'admin
+- Models nous: `ClientUsage`, `PlanHistory`, `DiscountPolicy`, `ClientDiscount`, `PricingPolicy`
+- Límits d'ús per pla: `maxConversations`, `maxTokens`, `maxAutomations`...
+- Funcionalitats per pla: `hasRag`, `hasLandingPro`, `hasCustomDomain`...
+- 5 polítiques de descompte inicials (nou client, anual, referits, manual)
+- Endpoints: `/api/settings/discount-policies`, `/api/settings/pricing-policy`, `/api/plans`, `/api/clients/:id/usage`
+
+**Disseny visual admin**
+- Layout persistent amb sidebar 180px (brand, nav actiu, usuari/logout)
+- Top bar 70px sticky amb backdrop-blur i breadcrumb
+- Grid de fons subtil en tota l'àrea de contingut
+- Totes les pàgines admin segueixen el design system AMG
+
+**Problemes resolts**
+- CORS bloquejava port 3001 (frontend arrencava al 3001 perquè 3000 estava ocupat)
+- `BASE_URL=http://localhost:3000` al `.env` sobreescrivia la llista d'orígens permesos
+- Conflicte de nom `getPlanHistory` importat i exportat al mateix controlador
+
+**Branca:** `develop` — tots els canvis publicats
