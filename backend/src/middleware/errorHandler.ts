@@ -1,5 +1,14 @@
 import { Request, Response, NextFunction } from 'express'
 import { ZodError } from 'zod'
+import { Prisma } from '@prisma/client'
+
+const PRISMA_FIELD_LABELS: Record<string, string> = {
+  contactEmail: 'email de contacte',
+  email:        'email',
+  slug:         'slug',
+  domain:       'domini',
+  token:        'token',
+}
 
 export const errorHandler = (
   err: any,
@@ -13,6 +22,33 @@ export const errorHandler = (
       success: false,
       message: 'Dades invàlides',
       data: err.flatten().fieldErrors,
+    })
+  }
+
+  // Errors Prisma coneguts → missatges llegibles
+  if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err.code === 'P2002') {
+      const fields = (err.meta?.target as string[]) ?? []
+      const label  = fields.map(f => PRISMA_FIELD_LABELS[f] ?? f).join(', ')
+      return res.status(409).json({
+        success: false,
+        message: `Ja existeix un registre amb aquest ${label}`,
+        data: null,
+      })
+    }
+    if (err.code === 'P2025') {
+      return res.status(404).json({
+        success: false,
+        message: 'Registre no trobat',
+        data: null,
+      })
+    }
+    // Altres errors Prisma coneguts
+    console.error('[PRISMA]', err.code, err.message)
+    return res.status(400).json({
+      success: false,
+      message: `Error de base de dades (${err.code})`,
+      data: null,
     })
   }
 

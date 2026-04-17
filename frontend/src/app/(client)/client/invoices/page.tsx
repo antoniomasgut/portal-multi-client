@@ -18,7 +18,7 @@ export default function ClientInvoicesPage() {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('ca-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto animate-fade-in-up">
 
       <div className="mb-8">
         <p className="section-tag">PORTAL CLIENT</p>

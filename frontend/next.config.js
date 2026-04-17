@@ -2,10 +2,7 @@
 const nextConfig = {
   output: 'standalone',  // necessari per al Dockerfile multi-stage
   reactStrictMode: true,
-  i18n: {
-    locales: ['ca', 'es', 'en'],
-    defaultLocale: 'ca',
-  },
+  // i18n per App Router es gestiona a nivell d'app (Mòdul 10), no aquí
   images: {
     remotePatterns: [
       {

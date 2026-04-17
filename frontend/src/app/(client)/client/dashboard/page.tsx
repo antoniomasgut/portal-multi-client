@@ -48,7 +48,7 @@ export default function ClientDashboard() {
   const planColor = sub ? (PLAN_COLORS[sub.planSlug] ?? '#FF6B00') : 'var(--text-muted)'
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto animate-fade-in-up">
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="mb-8">

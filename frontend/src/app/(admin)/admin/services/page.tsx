@@ -117,7 +117,7 @@ export default function ServicesPage() {
   const inactive = services.filter(s => !s.isActive)
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto animate-fade-in-up">
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex justify-between items-start mb-8">

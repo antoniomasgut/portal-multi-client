@@ -35,10 +35,11 @@ export default async function LandingPage({ params }: { params: { slug: string }
   const color = landing.primaryColor || '#FF6B00'
 
   return (
-    <div className="min-h-screen bg-[#0d0d1a] flex flex-col">
+    <div className="min-h-screen bg-[#0d0d1a] flex flex-col grid-bg">
 
       {/* ── Nav ──────────────────────────────────────────────── */}
-      <nav className="border-b border-white/10 px-6 py-4 flex items-center justify-between">
+      <nav className="border-b px-6 py-4 flex items-center justify-between"
+        style={{ borderColor: `${color}25`, background: 'rgba(13,13,26,0.92)', backdropFilter: 'blur(12px)' }}>
         <p className="font-orbitron font-bold text-white tracking-widest text-sm"
           style={{ color }}>
           {landing.client.companyName}
@@ -52,7 +53,7 @@ export default async function LandingPage({ params }: { params: { slug: string }
       </nav>
 
       {/* ── Hero ──────────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center relative z-10 animate-fade-in-up">
 
         <div className="w-16 h-0.5 mb-10" style={{ background: color }} />
 
@@ -89,7 +90,7 @@ export default async function LandingPage({ params }: { params: { slug: string }
       </main>
 
       {/* ── Footer ───────────────────────────────────────────── */}
-      <footer className="border-t border-white/10 px-6 py-4 text-center">
+      <footer className="border-t px-6 py-4 text-center" style={{ borderColor: `${color}15` }}>
         <p className="font-mono text-[9px] text-white/20 tracking-[3px]">
           POWERED BY AMG ENGINYERIA DIGITAL
         </p>

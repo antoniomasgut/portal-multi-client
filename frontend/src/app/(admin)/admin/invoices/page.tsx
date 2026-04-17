@@ -42,7 +42,7 @@ export default function InvoicesPage() {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('ca-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto animate-fade-in-up">
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex justify-between items-start mb-8">

@@ -50,6 +50,8 @@ services:
     restart: unless-stopped
     expose:
       - "3000"
+    ports:
+      - "3000:3000"
     environment:
       - NODE_ENV=${NODE_ENV:-development}
       - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:4000}
@@ -122,7 +124,7 @@ services:
     container_name: portal_db
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       - POSTGRES_DB=portal_db
       - POSTGRES_USER=user

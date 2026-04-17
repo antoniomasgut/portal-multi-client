@@ -50,7 +50,7 @@ export default function LoginPage() {
 
   return (
     <main className="grid-bg min-h-screen flex items-center justify-center relative">
-      <div className="relative z-10 w-full max-w-md px-4">
+      <div className="relative z-10 w-full max-w-md px-4 animate-fade-in-up">
 
         {/* Logo */}
         <div className="text-center mb-10">
