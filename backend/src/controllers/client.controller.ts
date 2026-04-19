@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { clientService, planService, usageService, getPlanHistory as fetchPlanHistory } from '../services/client.service'
 import { createClientSchema, updateClientSchema, assignPlanSchema } from '../schemas/client'
 import { prisma } from '../db'
+import { signAccess } from '../utils/jwt'
 
 // ── Plans ────────────────────────────────────────────────────────────────
 
@@ -149,5 +150,22 @@ export const getPlanHistoryCtrl = async (req: Request, res: Response, next: Next
   try {
     const history = await fetchPlanHistory(req.params.id)
     res.json({ success: true, message: 'OK', data: history })
+  } catch (err) { next(err) }
+}
+
+// ── Impersonació ─────────────────────────────────────────────────────────
+export const impersonateClient = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const clientId = req.params.id
+    const user = await prisma.user.findFirst({
+      where: { clientId, role: 'CLIENT', deletedAt: null },
+    })
+    if (!user) {
+      const err: any = new Error('Aquest client no té cap usuari associat')
+      err.status = 404
+      throw err
+    }
+    const token = signAccess({ userId: user.id, role: user.role, clientId: user.clientId })
+    res.json({ success: true, message: 'Token d\'impersonació generat', data: { accessToken: token, user: { id: user.id, email: user.email, role: user.role, clientId: user.clientId } } })
   } catch (err) { next(err) }
 }

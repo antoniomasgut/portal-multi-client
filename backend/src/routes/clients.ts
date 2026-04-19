@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { requireAuth, requireRole } from '../middleware/auth'
 import * as ctrl from '../controllers/client.controller'
+import { toggleServiceActive } from '../controllers/serviceActivation.controller'
 import credentialsRouter from './credentials'
 
 const router = Router()
@@ -20,6 +21,12 @@ router.post('/:id/plan',           requireAuth, requireRole('ADMIN'), ctrl.assig
 router.get('/:id/usage',           requireAuth, requireRole('ADMIN'), ctrl.getClientUsage)
 router.patch('/:id/usage',         requireAuth, requireRole('ADMIN'), ctrl.updateClientUsage)
 router.get('/:id/plan-history',    requireAuth, requireRole('ADMIN'), ctrl.getPlanHistoryCtrl)
+
+// Impersonació (ADMIN accedeix com a client)
+router.post('/:id/impersonate',    requireAuth, requireRole('ADMIN'), ctrl.impersonateClient)
+
+// Activació de serveis
+router.patch('/:clientId/services/:serviceId/active', requireAuth, requireRole('ADMIN'), toggleServiceActive)
 
 // Credencials encriptades
 router.use('/:id/credentials', credentialsRouter)

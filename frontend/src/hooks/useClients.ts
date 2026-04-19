@@ -79,3 +79,9 @@ export function useDeleteClient() {
     onSuccess:  () => qc.invalidateQueries({ queryKey: ['clients'] }),
   })
 }
+
+export function useImpersonateClient() {
+  return useMutation({
+    mutationFn: (id: string) => api.post(`/api/clients/${id}/impersonate`).then(r => r.data.data),
+  })
+}

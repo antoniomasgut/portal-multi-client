@@ -65,21 +65,33 @@ model AuditLog {
 
 // ── Serveis ───────────────────────────────────────────────────────────
 model Service {
-  id           String  @id @default(uuid())
-  name         String  @unique
-  slug         String  @unique
+  id           String          @id @default(uuid())
+  name         String          @unique
+  slug         String          @unique
   description  String?
-  setupPrice   Decimal @default(0) @db.Decimal(10, 2)
-  monthlyPrice Decimal @default(0) @db.Decimal(10, 2)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  category     ServiceCategory @default(PRODUCTE)
+  setupPrice   Decimal         @default(0) @db.Decimal(10, 2)
+  monthlyPrice Decimal         @default(0) @db.Decimal(10, 2)
+  isActive     Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   planServices         PlanService[]
   subscriptionServices SubscriptionService[]
 
   @@index([slug])
+  @@index([category])
   @@map("services")
+}
+
+enum ServiceCategory {
+  PRODUCTE
+  IA
+  AUTOMATITZACIONS
+  COMUNICACIO
+  INFORMES
+  SUPORT
+  OPERACIONAL
 }
 
 // ── Plans de servei ───────────────────────────────────────────────────
@@ -201,7 +213,10 @@ model SubscriptionService {
   subscriptionId String
   serviceId      String
   // isExtra: true = afegit sobre el pla base; false = inclòs al pla
-  isExtra        Boolean @default(false)
+  isExtra        Boolean   @default(false)
+  // active: el servei ha estat configurat i activat per l'administrador
+  active         Boolean   @default(false)
+  activatedAt    DateTime?
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
   service      Service      @relation(fields: [serviceId],      references: [id])
@@ -365,7 +380,10 @@ model ClientLanding {
   ctaText      String   @default("Contacta'ns")
   ctaUrl       String?
   logoGcsPath  String?
+  logoUrl      String?  // URL pública (GCS o externa) o base64 data URL (MVP)
   primaryColor String   @default("#FF6B00")
+  style        String   @default("dark-tech")
+  fontPair     String   @default("orbitron-rajdhani")
   published    Boolean  @default(false)
   publishedAt  DateTime?
   slug         String   @unique  // ex: "empresa-amg" → /l/empresa-amg

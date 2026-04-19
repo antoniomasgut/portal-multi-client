@@ -18,12 +18,14 @@ const PROVIDERS = [
   },
 ]
 
-interface Props { clientId: string }
+interface Props { clientId: string; filterProvider?: string }
 
-export default function ConnectionsPanel({ clientId }: Props) {
+export default function ConnectionsPanel({ clientId, filterProvider }: Props) {
   const { data: status = {}, isLoading } = useConnectionStatus(clientId)
   const startOAuth   = useStartOAuth(clientId)
   const disconnect   = useDisconnectOAuth(clientId)
+
+  const providers = filterProvider ? PROVIDERS.filter(p => p.id === filterProvider) : PROVIDERS
 
   if (isLoading) {
     return <p className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest animate-pulse">CARREGANT...</p>
@@ -31,7 +33,7 @@ export default function ConnectionsPanel({ clientId }: Props) {
 
   return (
     <div className="space-y-3">
-      {PROVIDERS.map(p => {
+      {providers.map(p => {
         const connected = status[p.id] ?? false
         return (
           <div key={p.id} className={`flex items-center justify-between p-4 border transition-colors ${

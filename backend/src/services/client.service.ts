@@ -62,7 +62,8 @@ export const clientService = {
     serviceIds?:     string[]
     extraServiceIds?: string[]
   }) {
-    const { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds, ...clientData } = data
+    const { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds, ...rawData } = data
+    const clientData = { ...rawData, domain: rawData.domain?.trim() || null }
     const hasPlan  = planId || isCustom
     const renewsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
 
@@ -98,7 +99,8 @@ export const clientService = {
     serviceIds:      string[]
     extraServiceIds: string[]
   }>) {
-    const { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds, ...clientData } = data
+    const { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds, ...rawData } = data
+    const clientData   = { ...rawData, domain: rawData.domain !== undefined ? (rawData.domain.trim() || null) : undefined }
     const changingPlan = planId || isCustom !== undefined
     if (changingPlan) {
       await clientService.assignPlan(id, { planId, isCustom, priceMonthly, priceSetup, serviceIds, extraServiceIds })

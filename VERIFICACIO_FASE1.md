@@ -102,3 +102,9 @@
 ---
 
 *Última revisió: 2026-04-17 — Punts completats: 5/14*
+
+---
+
+## Millores pendents
+
+- [ ] **CRUD de plans** — Poder canviar el nom i el preu dels plans (Bàsic/Pro/Premium/Empresarial) des de `Admin → Configuració`, sense haver de tocar el seed.

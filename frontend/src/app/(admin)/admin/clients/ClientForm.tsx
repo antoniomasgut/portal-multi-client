@@ -6,9 +6,7 @@ import { z } from 'zod'
 import { usePlans, useCreateClient, useUpdateClient } from '../../../../hooks/useClients'
 import { useServices } from '../../../../hooks/useServices'
 import type { Client, Service } from '../../../../types'
-import CredentialsPanel from './CredentialsPanel'
-import ConnectionsPanel from './ConnectionsPanel'
-import LandingEditor    from './LandingEditor'
+import ClientServiceManager from './ClientServiceManager'
 
 // ── Badge descriptors per pla ────────────────────────────────────────────
 const PLAN_STYLES: Record<string, {
@@ -90,9 +88,12 @@ export default function ClientForm({ client, onClose }: Props) {
   }
 
   const toggleExtra = (id: string) => {
-    const next = extraIds.includes(id) ? extraIds.filter(x => x !== id) : [...extraIds, id]
-    const base = selectedPlan ? Number(selectedPlan.priceMonthly) : 0
-    const { monthly, setup } = calcPrices(next, base, 0)
+    const next          = extraIds.includes(id) ? extraIds.filter(x => x !== id) : [...extraIds, id]
+    const baseMonthly   = selectedPlan ? Number(selectedPlan.priceMonthly) : 0
+    const baseSetup     = selectedPlan
+      ? selectedPlan.services.reduce((a, ps) => a + Number(ps.service.setupPrice ?? 0), 0)
+      : 0
+    const { monthly, setup } = calcPrices(next, baseMonthly, baseSetup)
     setExtraIds(next)
     setPriceMonthly(monthly.toString())
     setPriceSetup(setup.toString())
@@ -112,8 +113,9 @@ export default function ClientForm({ client, onClose }: Props) {
     setExtraIds([])
     setCustomIds([])
     if (newPlan) {
+      const setupTotal = newPlan.services.reduce((a, ps) => a + Number(ps.service.setupPrice ?? 0), 0)
       setPriceMonthly(Number(newPlan.priceMonthly).toString())
-      setPriceSetup('0')
+      setPriceSetup(setupTotal.toString())
     } else if (id === 'custom') {
       setPriceMonthly('0')
       setPriceSetup('0')
@@ -251,8 +253,11 @@ export default function ClientForm({ client, onClose }: Props) {
 
               {/* Plans estàndard */}
               {plans.map(p => {
-                const style   = PLAN_STYLES[p.slug]
-                const isActive = planMode === p.id
+                const style        = PLAN_STYLES[p.slug]
+                const isActive     = planMode === p.id
+                const indivMonthly = p.services.reduce((a, ps) => a + Number(ps.service.monthlyPrice ?? 0), 0)
+                const indivSetup   = p.services.reduce((a, ps) => a + Number(ps.service.setupPrice   ?? 0), 0)
+                const savings      = indivMonthly - Number(p.priceMonthly)
                 return (
                   <button
                     key={p.id}
@@ -269,9 +274,24 @@ export default function ClientForm({ client, onClose }: Props) {
                       {p.services.length} SERVEIS
                     </p>
                     <p className="font-rajdhani font-semibold text-sm text-[var(--text)]">{p.name}</p>
-                    <p className="font-mono text-[10px] mt-0.5" style={{ color: style?.accent ?? '#FF6B00' }}>
+                    <p className="font-mono text-[11px] font-bold mt-0.5" style={{ color: style?.accent ?? '#FF6B00' }}>
                       {p.priceMonthly}€/mes
                     </p>
+                    {indivSetup > 0 && (
+                      <p className="font-mono text-[9px] text-[var(--text-muted)] mt-1">
+                        Setup: {indivSetup}€
+                      </p>
+                    )}
+                    {indivMonthly > 0 && (
+                      <p className="font-mono text-[9px] text-[var(--text-muted)] mt-0.5 line-through">
+                        {indivMonthly}€/mes per separat
+                      </p>
+                    )}
+                    {savings > 0 && (
+                      <p className="font-mono text-[9px] text-[#4ade80] mt-0.5">
+                        Estalvi {savings}€/mes
+                      </p>
+                    )}
                   </button>
                 )
               })}
@@ -288,29 +308,37 @@ export default function ClientForm({ client, onClose }: Props) {
               >
                 <p className="font-mono text-[9px] tracking-widest text-[#FF6B00] uppercase mb-1">PERSONALITZAT</p>
                 <p className="font-rajdhani font-semibold text-sm text-[var(--text)]">Pla a mida</p>
-                <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">Selecció lliure</p>
+                <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">Selecció lliure de serveis</p>
               </button>
             </div>
 
-            {/* ── Serveis del pla estàndard (bloquejats) ──────── */}
+            {/* ── Serveis del pla estàndard ────────────────────── */}
             {planMode && planMode !== 'custom' && selectedPlan && (
               <div className="mt-4 space-y-4">
-                {/* Serveis inclosos */}
+                {/* Serveis inclosos amb preu individual */}
                 <div>
                   <p className="font-mono text-[9px] tracking-[3px] text-[var(--text-muted)] uppercase mb-2">
                     Inclosos al pla {selectedPlan.name}
                   </p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                     {selectedPlan.services.map(ps => {
                       const style = PLAN_STYLES[selectedPlan.slug]
                       return (
-                        <span
+                        <div
                           key={ps.service.id}
-                          className="font-mono text-[9px] tracking-wider px-2 py-1 border"
-                          style={{ color: style?.accent ?? '#FF6B00', borderColor: `${style?.accent ?? '#FF6B00'}40` }}
+                          className="flex items-center justify-between px-3 py-2 border"
+                          style={{ borderColor: `${style?.accent ?? '#FF6B00'}30`, background: `${style?.accent ?? '#FF6B00'}06` }}
                         >
-                          ✓ {ps.service.name}
-                        </span>
+                          <div className="flex items-center gap-2">
+                            <span style={{ color: style?.accent ?? '#FF6B00' }} className="text-xs">✓</span>
+                            <span className="font-rajdhani text-sm text-[var(--text)]">{ps.service.name}</span>
+                          </div>
+                          {Number(ps.service.monthlyPrice) > 0 && (
+                            <span className="font-mono text-[10px] text-[var(--text-muted)] shrink-0 ml-2">
+                              {ps.service.monthlyPrice}€/mes
+                            </span>
+                          )}
+                        </div>
                       )
                     })}
                   </div>
@@ -334,15 +362,23 @@ export default function ClientForm({ client, onClose }: Props) {
                       ))}
                     </div>
                     {extraIds.length > 0 && (
-                      <PriceFields
-                        priceMonthly={priceMonthly}
-                        priceSetup={priceSetup}
-                        onChangeMonthly={setPriceMonthly}
-                        onChangeSetup={setPriceSetup}
+                      <PlanSuggestion
+                        currentTotal={parseFloat(priceMonthly) || 0}
+                        selectedServiceIds={[...planServiceIds, ...extraIds]}
+                        plans={plans}
+                        currentPlanId={planMode}
                       />
                     )}
                   </div>
                 )}
+
+                {/* Preu final — sempre visible quan hi ha pla */}
+                <PriceFields
+                  priceMonthly={priceMonthly}
+                  priceSetup={priceSetup}
+                  onChangeMonthly={setPriceMonthly}
+                  onChangeSetup={setPriceSetup}
+                />
               </div>
             )}
 
@@ -364,12 +400,20 @@ export default function ClientForm({ client, onClose }: Props) {
                   ))}
                 </div>
                 {customIds.length > 0 ? (
-                  <PriceFields
-                    priceMonthly={priceMonthly}
-                    priceSetup={priceSetup}
-                    onChangeMonthly={setPriceMonthly}
-                    onChangeSetup={setPriceSetup}
-                  />
+                  <>
+                    <PlanSuggestion
+                      currentTotal={parseFloat(priceMonthly) || 0}
+                      selectedServiceIds={customIds}
+                      plans={plans}
+                      currentPlanId={null}
+                    />
+                    <PriceFields
+                      priceMonthly={priceMonthly}
+                      priceSetup={priceSetup}
+                      onChangeMonthly={setPriceMonthly}
+                      onChangeSetup={setPriceSetup}
+                    />
+                  </>
                 ) : (
                   <p className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest py-2">
                     Selecciona serveis per calcular el preu
@@ -379,41 +423,8 @@ export default function ClientForm({ client, onClose }: Props) {
             )}
           </section>
 
-          {/* ── Micro-Landing (només edició) ─────────────────── */}
-          {isEdit && (
-            <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-1 h-5 bg-[#c084fc]" />
-                <p className="font-mono text-[10px] tracking-[4px] text-[#c084fc] uppercase">Micro-Landing</p>
-              </div>
-              <LandingEditor clientId={client!.id} companyName={client!.companyName} />
-            </section>
-          )}
-
-          {/* ── Connexions OAuth (només edició) ───────────────── */}
-          {isEdit && (
-            <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-1 h-5 bg-[#4ade80]" />
-                <p className="font-mono text-[10px] tracking-[4px] text-[#4ade80] uppercase">Connexions</p>
-              </div>
-              <ConnectionsPanel clientId={client!.id} />
-            </section>
-          )}
-
-          {/* ── Credencials API (només edició) ────────────────── */}
-          {isEdit && (
-            <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-1 h-5 bg-[#8888aa]" />
-                <p className="font-mono text-[10px] tracking-[4px] text-[var(--text-muted)] uppercase">Credencials API</p>
-              </div>
-              <CredentialsPanel clientId={client!.id} />
-            </section>
-          )}
-
           {/* ── Botons ────────────────────────────────────────── */}
-          <div className="flex gap-3 pb-8">
+          <div className="flex gap-3 pb-4">
             <button type="submit" className="btn-primary" disabled={isSubmitting}>
               {isSubmitting ? 'DESANT...' : isEdit ? 'DESAR CANVIS' : 'CREAR CLIENT'}
             </button>
@@ -423,6 +434,79 @@ export default function ClientForm({ client, onClose }: Props) {
           </div>
 
         </form>
+
+        {/* ── Serveis contractats — FORA del <form> per evitar nesting ── */}
+        {isEdit && (() => {
+          const activeSub = client!.subscriptions?.find(s => s.status === 'ACTIVE')
+          const subServices = activeSub?.services ?? []
+          const services = subServices.map(ss => ({
+            serviceId:   ss.service.id,
+            serviceName: ss.service.name,
+            serviceSlug: ss.service.slug,
+            serviceDesc: ss.service.description,
+            category:    ss.service.category,
+            active:      ss.active ?? false,
+            activatedAt: ss.activatedAt ?? null,
+            isExtra:     ss.isExtra,
+          }))
+          return (
+            <section className="bg-[var(--bg-2)] border border-[var(--border)] p-6 mt-6 mb-8">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-1 h-5 bg-[#FF6B00]" />
+                <p className="font-mono text-[10px] tracking-[4px] text-[#FF6B00] uppercase">Serveis contractats</p>
+              </div>
+              <ClientServiceManager
+                clientId={client!.id}
+                companyName={client!.companyName}
+                services={services}
+              />
+            </section>
+          )
+        })()}
+    </div>
+  )
+}
+
+// ── PlanSuggestion ───────────────────────────────────────────────────────
+function PlanSuggestion({ currentTotal, selectedServiceIds, plans, currentPlanId }: {
+  currentTotal:       number
+  selectedServiceIds: string[]
+  plans:              { id: string; name: string; slug: string; priceMonthly: number; services: { service: { id: string; monthlyPrice: number } }[] }[]
+  currentPlanId:      string | null
+}) {
+  // Troba plans que incloguin almenys el 60% dels serveis seleccionats i siguin més barats
+  const suggestions = plans
+    .filter(p => p.id !== currentPlanId)
+    .map(p => {
+      const planServiceIds  = p.services.map(ps => ps.service.id)
+      const covered         = selectedServiceIds.filter(id => planServiceIds.includes(id)).length
+      const coverageRatio   = selectedServiceIds.length > 0 ? covered / selectedServiceIds.length : 0
+      const planPrice       = Number(p.priceMonthly)
+      const saving          = currentTotal - planPrice
+      return { plan: p, covered, coverageRatio, planPrice, saving }
+    })
+    .filter(s => s.coverageRatio >= 0.6 && s.saving > 0)
+    .sort((a, b) => b.saving - a.saving)
+
+  if (suggestions.length === 0) return null
+
+  const best = suggestions[0]
+  const style = { basic: '#4ade80', pro: '#60a5fa', premium: '#c084fc', empresarial: '#FF6B00' }[best.plan.slug] ?? '#FF6B00'
+
+  return (
+    <div className="mt-3 p-3 border border-[#4ade80]/30 bg-[#4ade80]/5 flex items-start gap-3">
+      <span className="text-[#4ade80] mt-0.5 shrink-0">💡</span>
+      <div>
+        <p className="font-mono text-[10px] text-[#4ade80] tracking-wider uppercase mb-1">Suggeriment</p>
+        <p className="font-rajdhani text-sm text-[var(--text)]">
+          El <span className="font-bold" style={{ color: style }}>{best.plan.name}</span> inclou{' '}
+          <span className="font-bold">{best.covered}/{selectedServiceIds.length}</span> dels serveis seleccionats
+          per <span className="font-bold" style={{ color: style }}>{best.plan.priceMonthly}€/mes</span>
+          {currentTotal > 0 && (
+            <span className="text-[#4ade80]"> — estalvies {best.saving.toFixed(0)}€/mes</span>
+          )}
+        </p>
+      </div>
     </div>
   )
 }

@@ -31,13 +31,24 @@ export const landingService = {
     })
   },
 
+  /** Per a previsualització admin — retorna la landing independentment de l'estat */
+  async getBySlugAny(slug: string) {
+    return prisma.clientLanding.findUnique({
+      where:   { slug },
+      include: { client: { select: { companyName: true, domain: true } } },
+    })
+  },
+
   async upsert(clientId: string, data: {
-    title:        string
+    title?:       string
     subtitle?:    string
     description?: string
     ctaText?:     string
     ctaUrl?:      string
     primaryColor?: string
+    style?:        string
+    fontPair?:     string
+    logoUrl?:      string
     published?:   boolean
     logoGcsPath?: string
   }) {
@@ -53,12 +64,15 @@ export const landingService = {
       create: {
         clientId,
         slug,
-        title:        data.title,
+        title:        data.title ?? '',
         subtitle:     data.subtitle,
         description:  data.description,
         ctaText:      data.ctaText      ?? "Contacta'ns",
         ctaUrl:       data.ctaUrl,
         primaryColor: data.primaryColor ?? '#FF6B00',
+        style:        data.style        ?? 'dark-tech',
+        fontPair:     data.fontPair     ?? 'orbitron-rajdhani',
+        logoUrl:      data.logoUrl      ?? null,
         published:    data.published    ?? false,
         logoGcsPath:  data.logoGcsPath,
         publishedAt:  data.published ? new Date() : null,

@@ -1,5 +1,5 @@
 # Progrés del Projecte
-Última actualització: 2026-04-16
+Última actualització: 2026-04-19
 
 ## Resum executiu
 - Fase actual: **1 — MVP** ✅ COMPLETADA
@@ -23,9 +23,10 @@
 | 36 — OAuth Connect | 2026-04-16 | Model OAuthState (CSRF), flux start/callback Meta WhatsApp, ConnectionsPanel amb estat connectat/desconnectat, disconnect endpoint |
 | 34 — Flux de Setup | 2026-04-16 | SetupWizard 4 passos (Verificar, Connexions, Credencials, Completat), botó SETUP a la llista de clients |
 | 11 — Storage GCS   | 2026-04-16 | gcs.ts utility (upload/publicUrl/signedUrl/delete/ping), AES-256-GCM ready. **Pendent:** GCS_KEY_FILE real |
-| 3  — Micro-Landing | 2026-04-16 | Model ClientLanding + slug auto, landing service (upsert/publish/unpublish), LandingEditor al ClientForm, pàgina pública /l/[slug] |
+| 3  — Micro-Landing | 2026-04-19 | Model ClientLanding + slug auto, landing service (upsert/publish/unpublish), LandingEditor al ClientForm, pàgina pública /l/[slug]. **Rev.2:** fix formularis niats (GET natiu), logo hero centrat sense títol, títol opcional, keepDirtyValues+staleTime, 4 estils + 5 fonts |
 | 4  — Facturació    | 2026-04-16 | Invoice+InvoiceItem models, numeració auto (YYYY-NNNN), càlcul de descomptes actius, stats, /admin/invoices page, modal generar, accions pagar/cancel·lar |
 | 5  — Dashboard client | 2026-04-16 | Portal client /client/dashboard (subscripció, serveis, barres d'ús), /client/invoices, layout CLIENT amb auth guard, redirecció automàtica per rol |
+| 40 — Activació Serveis | 2026-04-19 | Camp `active`+`activatedAt` a `subscription_services`, endpoint `PATCH /api/clients/:id/services/:serviceId/active`, `ClientServiceManager` amb toggle per servei, panels de config (Landing/WhatsApp/n8n) + tutorial colapsable per cada servei |
 
 ### 🔄 En progrés
 *(cap)*
@@ -102,3 +103,36 @@
 - Conflicte de nom `getPlanHistory` importat i exportat al mateix controlador
 
 **Branca:** `develop` — tots els canvis publicats
+
+---
+
+### Sessió 2026-04-19
+**Tasca:** Fixes Micro-Landing + Sistema d'activació de serveis per client
+
+**Mòdul 3 rev.2 — Micro-Landing (fixes)**
+- **Fix crític:** `LandingEditor` estava dins el `<form>` de `ClientForm` — formularis niats fan que el navegador faci una petició GET nativa, ignorant React. Camps gestionats via `setValue` (fontPair, style, logoUrl) no s'enviaven. Solució: LandingEditor, ConnectionsPanel i CredentialsPanel moguts fora del `</form>`
+- Logo com a hero: quan no hi ha títol i hi ha logo, es mostra gran i centrat com a element principal (`HeroLogo` h-24/h-36 + drop-shadow)
+- Títol opcional: schema frontend (`z.string().optional()`) i backend (`z.string().max(100).optional()`) accepten títol buit
+- `keepDirtyValues: true` al `reset()`: evita sobreescriure canvis de l'usuari quan React Query refetcha
+- `staleTime: 5 * 60 * 1000`: evita refetch en segon pla durant 5 minuts
+- Eliminat `brightness-0 invert` del HeroLogo que feia els logos invisibles en fons clars
+- Pàgina de previsualització admin `/admin/landing-preview/[slug]` sense restricció de publicació
+- `filterProvider` a `ConnectionsPanel` i `filterService` a `CredentialsPanel` per mostrar només el proveïdor/servei rellevant
+
+**Mòdul 40 — Activació de serveis (nou)**
+- BD: camp `active Boolean @default(false)` + `activatedAt DateTime?` a `subscription_services`
+- Backend: `PATCH /api/clients/:clientId/services/:serviceId/active` (controller `serviceActivation.controller.ts`)
+- Frontend hook: `useToggleService(clientId)` — invalida `['client', clientId]` i `['clients']`
+- `ClientServiceManager`: llista tots els serveis contractats de la subscripció activa amb:
+  - Toggle ACTIVAR / DESACTIVAR per servei
+  - Badge ACTIU/INACTIU + EXTRA
+  - Auto-expandeix el panel en activar
+  - Botó CONFIGURAR ▼ per obrir/tancar
+- Panels de configuració per slug:
+  - `landing-page-*` → `LandingEditor` complet
+  - `whatsapp-bot` → Connexió WhatsApp OAuth + connexió n8n + credencials n8n
+  - `automatitzacions` → Connexió n8n + credencials n8n
+  - Resta → "Configuració disponible pròximament"
+- `ServiceTutorial`: acordió colapsable amb passos numerats específics per a Landing (5 passos), WhatsApp (4 passos) i Automatitzacions (4 passos)
+
+**Branca:** `develop` — pendent de commit

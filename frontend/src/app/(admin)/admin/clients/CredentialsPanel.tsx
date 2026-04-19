@@ -8,10 +8,11 @@ const SERVICE_PRESETS: { service: string; label: string; keys: string[] }[] = [
   { service: 'openai',   label: 'OpenAI',             keys: ['API_KEY'] },
 ]
 
-interface Props { clientId: string }
+interface Props { clientId: string; filterService?: string }
 
-export default function CredentialsPanel({ clientId }: Props) {
-  const { data: creds = [], isLoading } = useCredentials(clientId)
+export default function CredentialsPanel({ clientId, filterService }: Props) {
+  const { data: allCreds = [], isLoading } = useCredentials(clientId)
+  const creds = filterService ? allCreds.filter(c => c.service === filterService) : allCreds
   const setCredential    = useSetCredential(clientId)
   const deleteCredential = useDeleteCredential(clientId)
 
@@ -45,7 +46,7 @@ export default function CredentialsPanel({ clientId }: Props) {
       <div>
         <p className="form-label mb-2">Afegir ràpid</p>
         <div className="flex flex-wrap gap-2">
-          {SERVICE_PRESETS.map(preset =>
+          {SERVICE_PRESETS.filter(p => !filterService || p.service === filterService).map(preset =>
             preset.keys.map(key => {
               const exists = creds.some(c => c.service === preset.service && c.key === key)
               return (

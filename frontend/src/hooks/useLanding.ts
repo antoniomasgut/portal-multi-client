@@ -2,6 +2,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../utils/api'
 
+export type LandingStyle   = 'dark-tech' | 'minimal-light' | 'gradient-hero' | 'split-layout'
+export type LandingFontPair = 'orbitron-rajdhani' | 'poppins-poppins' | 'playfair-merriweather' | 'merriweather-poppins' | 'mono-rajdhani'
+
 export interface ClientLanding {
   id:           string
   clientId:     string
@@ -12,6 +15,9 @@ export interface ClientLanding {
   ctaText:      string
   ctaUrl?:      string
   primaryColor: string
+  style:        LandingStyle
+  fontPair?:    LandingFontPair
+  logoUrl?:     string | null
   published:    boolean
   publishedAt?: string
   logoGcsPath?: string
@@ -22,9 +28,10 @@ export function useLanding(clientId: string) {
     queryKey: ['landing', clientId],
     queryFn:  async () => {
       const res = await api.get(`/api/landing/${clientId}`)
-      return res.data.data
+      return res.data.data ?? null
     },
-    enabled: !!clientId,
+    enabled:   !!clientId,
+    staleTime: 5 * 60 * 1000, // evita refetch de fons mentre l'usuari edita
   })
 }
 

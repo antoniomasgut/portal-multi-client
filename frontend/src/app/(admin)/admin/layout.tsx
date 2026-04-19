@@ -21,23 +21,25 @@ const PAGE_TITLES: Record<string, string> = {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const { user, clearAuth } = useAuthStore()
-  const router              = useRouter()
-  const pathnameRaw         = usePathname()
-  const pathname            = pathnameRaw ?? ''
+  const { user, clearAuth, isInitialized } = useAuthStore()
+  const router                             = useRouter()
+  const pathnameRaw                        = usePathname()
+  const pathname                           = pathnameRaw ?? ''
 
   useEffect(() => {
+    if (!isInitialized) return
     if (!user) router.push('/login')
-  }, [user, router])
+  }, [user, router, isInitialized])
 
   const handleLogout = () => {
     clearAuth()
     router.push('/login')
   }
 
-  // Determine current page title for breadcrumb
   const pageTitle = PAGE_TITLES[pathname] ?? 'Admin'
 
+  // Esperar la inicialització abans de mostrar res
+  if (!isInitialized) return null
   if (!user) return null
 
   return (

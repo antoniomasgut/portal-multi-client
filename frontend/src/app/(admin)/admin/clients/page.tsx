@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { useClients, useDeleteClient } from '../../../../hooks/useClients'
+import { useRouter } from 'next/navigation'
+import { useClients, useDeleteClient, useImpersonateClient } from '../../../../hooks/useClients'
+import { useAuthStore } from '../../../../store/useAuthStore'
 import ClientForm from './ClientForm'
 import SetupWizard from './SetupWizard'
 import type { Client } from '../../../../types'
@@ -13,8 +15,11 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export default function ClientsPage() {
+  const router                      = useRouter()
   const { data: clients = [], isLoading } = useClients()
-  const deleteClient              = useDeleteClient()
+  const deleteClient                = useDeleteClient()
+  const impersonate                 = useImpersonateClient()
+  const startImpersonate            = useAuthStore(s => s.startImpersonate)
   const [showForm, setShowForm]     = useState(false)
   const [editClient, setEditClient] = useState<Client | null>(null)
   const [setupClient, setSetupClient] = useState<Client | null>(null)
@@ -22,6 +27,12 @@ export default function ClientsPage() {
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Eliminar el client "${name}"?`)) return
     await deleteClient.mutateAsync(id)
+  }
+
+  const handleImpersonate = async (client: Client) => {
+    const data = await impersonate.mutateAsync(client.id)
+    startImpersonate(data.user, data.accessToken)
+    router.push('/client/dashboard')
   }
 
   if (setupClient) {
@@ -81,7 +92,7 @@ export default function ClientsPage() {
       ) : (
         <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
           {/* Capçalera taula */}
-          <div className="grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
+          <div className="grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_200px] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
             {['EMPRESA / CONTACTE', 'SUBSCRIPCIÓ', 'SERVEIS', 'DOMINI', 'USU.', 'ACCIONS'].map(h => (
               <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
             ))}
@@ -93,7 +104,7 @@ export default function ClientsPage() {
             return (
               <div
                 key={client.id}
-                className={`grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_auto] gap-4 px-5 py-4 items-center
+                className={`grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_200px] gap-4 px-5 py-4 items-center
                   hover:bg-[var(--bg-1)] transition-colors
                   ${i < clients.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
               >
@@ -182,6 +193,13 @@ export default function ClientsPage() {
 
                 {/* Accions */}
                 <div className="flex gap-2 justify-end">
+                  <button
+                    className="font-mono text-[9px] tracking-widest px-2.5 py-1.5 border border-[#60a5fa]/40 text-[#60a5fa] hover:bg-[#60a5fa]/10 transition-colors"
+                    onClick={() => handleImpersonate(client)}
+                    title="Entrar al portal del client sense necessitar la seva contrasenya"
+                  >
+                    ENTRAR
+                  </button>
                   <button
                     className="font-mono text-[9px] tracking-widest px-2.5 py-1.5 border border-[#FF6B00]/40 text-[#FF6B00] hover:bg-[#FF6B00]/10 transition-colors"
                     onClick={() => setSetupClient(client)}

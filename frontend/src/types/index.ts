@@ -1,8 +1,11 @@
+export type ServiceCategory = 'PRODUCTE' | 'IA' | 'AUTOMATITZACIONS' | 'COMUNICACIO' | 'INFORMES' | 'SUPORT' | 'OPERACIONAL'
+
 export interface Service {
   id:           string
   name:         string
   slug:         string
   description:  string | null
+  category:     ServiceCategory
   setupPrice:   number
   monthlyPrice: number
   isActive:     boolean
@@ -25,9 +28,11 @@ export interface Plan {
 }
 
 export interface SubscriptionService {
-  serviceId: string
-  isExtra:   boolean
-  service:   Service
+  serviceId:   string
+  isExtra:     boolean
+  active:      boolean
+  activatedAt: string | null
+  service:     Service
 }
 
 export interface Subscription {

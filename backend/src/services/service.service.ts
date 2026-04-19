@@ -1,4 +1,5 @@
 import { prisma } from '../db'
+import { ServiceCategory } from '@prisma/client'
 
 const WITH_PLANS = {
   planServices: {
@@ -20,14 +21,15 @@ export const serviceService = {
   async listAll() {
     return prisma.service.findMany({
       include: WITH_PLANS,
-      orderBy: [{ isActive: 'desc' }, { name: 'asc' }],
+      orderBy: [{ category: 'asc' }, { name: 'asc' }],
     })
   },
 
   async create(data: {
-    name:         string
-    slug:         string
-    description?: string
+    name:          string
+    slug:          string
+    description?:  string
+    category?:     ServiceCategory
     setupPrice?:   number
     monthlyPrice?: number
   }) {
@@ -38,6 +40,7 @@ export const serviceService = {
     name:         string
     slug:         string
     description:  string
+    category:     ServiceCategory
     setupPrice:   number
     monthlyPrice: number
     isActive:     boolean
