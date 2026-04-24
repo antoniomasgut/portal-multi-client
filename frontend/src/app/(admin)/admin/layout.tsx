@@ -3,21 +3,27 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { useAuthStore } from '../../../store/useAuthStore'
+import { useTranslation } from '../../../hooks/useTranslation'
+import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 
-const NAV_ITEMS = [
-  { label: 'DASHBOARD',    href: '/admin/dashboard'  },
-  { label: 'CLIENTS',      href: '/admin/clients'    },
-  { label: 'FACTURACIÓ',   href: '/admin/invoices'   },
-  { label: 'SERVEIS',      href: '/admin/services'   },
-  { label: 'CONFIGURACIÓ', href: '/admin/settings'   },
+const NAV_HREFS = [
+  { key: 'nav.dashboard',   href: '/admin/dashboard'   },
+  { key: 'nav.clients',     href: '/admin/clients'     },
+  { key: 'nav.billing',     href: '/admin/invoices'    },
+  { key: 'nav.services',    href: '/admin/services'    },
+  { key: 'nav.onboarding',  href: '/admin/onboarding'  },
+  { key: 'nav.automations', href: '/admin/automations' },
+  { key: 'nav.settings',    href: '/admin/settings'    },
 ]
 
-const PAGE_TITLES: Record<string, string> = {
-  '/admin/dashboard': 'Dashboard',
-  '/admin/clients':   'Clients',
-  '/admin/invoices':  'Facturació',
-  '/admin/services':  'Serveis',
-  '/admin/settings':  'Configuració',
+const PAGE_TITLE_KEYS: Record<string, string> = {
+  '/admin/dashboard':   'nav.dashboard',
+  '/admin/clients':     'nav.clients',
+  '/admin/invoices':    'nav.billing',
+  '/admin/services':    'nav.services',
+  '/admin/onboarding':  'nav.onboarding',
+  '/admin/automations': 'nav.automations',
+  '/admin/settings':    'nav.settings',
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -25,6 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router                             = useRouter()
   const pathnameRaw                        = usePathname()
   const pathname                           = pathnameRaw ?? ''
+  const { t }                              = useTranslation('common')
 
   useEffect(() => {
     if (!isInitialized) return
@@ -36,9 +43,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.push('/login')
   }
 
-  const pageTitle = PAGE_TITLES[pathname] ?? 'Admin'
+  const pageTitleKey = PAGE_TITLE_KEYS[pathname] ?? 'portal.brand'
 
-  // Esperar la inicialització abans de mostrar res
   if (!isInitialized) return null
   if (!user) return null
 
@@ -53,16 +59,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Brand */}
         <div className="px-4 py-5 border-b border-[var(--border)]">
           <p className="font-mono text-[9px] tracking-[3px] text-[var(--text-muted)] uppercase mb-1">
-            PORTAL ADMIN
+            {t('portal.admin_title')}
           </p>
           <p className="font-orbitron font-black text-[#FF6B00] text-lg leading-tight tracking-wider">
-            AMG
+            {t('portal.brand')}
           </p>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 py-4">
-          {NAV_ITEMS.map(item => {
+          {NAV_HREFS.map(item => {
             const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
             return (
               <Link
@@ -76,14 +82,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     : 'border-l-transparent text-[var(--text-muted)] hover:text-[var(--text)] hover:bg-[rgba(255,107,0,0.03)]',
                 ].join(' ')}
               >
-                {item.label}
+                {t(item.key)}
               </Link>
             )
           })}
         </nav>
 
-        {/* User + Logout */}
+        {/* Language + User + Logout */}
         <div className="px-4 py-4 border-t border-[var(--border)] space-y-3">
+          <LanguageSwitcher />
           <div>
             <p className="font-mono text-[9px] text-[var(--text-muted)] tracking-widest leading-relaxed break-all">
               {user.email}
@@ -94,7 +101,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className="btn-outline text-[10px] w-full"
             onClick={handleLogout}
           >
-            SORTIR
+            {t('actions.logout')}
           </button>
         </div>
       </aside>
@@ -117,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </span>
             <span className="font-mono text-[10px] text-[var(--text-muted)]">/</span>
             <span className="font-mono text-[10px] tracking-[2px] text-[#FF6B00] uppercase">
-              {pageTitle}
+              {t(pageTitleKey)}
             </span>
           </div>
         </header>

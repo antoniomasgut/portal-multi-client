@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "dashboard": "Panel",
+    "clients": "Clientes",
+    "billing": "Facturación",
+    "services": "Servicios",
+    "settings": "Configuración",
+    "invoices": "Facturas",
+    "onboarding": "Onboarding",
+    "automations": "Automatizaciones"
+  },
+  "actions": {
+    "save": "GUARDAR",
+    "cancel": "CANCELAR",
+    "delete": "ELIMINAR",
+    "create": "CREAR",
+    "edit": "EDITAR",
+    "close": "CERRAR",
+    "confirm": "CONFIRMAR",
+    "back": "VOLVER",
+    "send": "ENVIAR",
+    "loading": "CARGANDO...",
+    "logout": "SALIR",
+    "return_admin": "← VOLVER A ADMIN"
+  },
+  "status": {
+    "active": "Activo",
+    "suspended": "Suspendido",
+    "cancelled": "Cancelado",
+    "pending": "Pendiente",
+    "paid": "Pagado",
+    "overdue": "Vencido",
+    "draft": "Borrador"
+  },
+  "errors": {
+    "required": "Campo obligatorio",
+    "invalid_email": "Email no válido",
+    "min_length": "Mínimo {{min}} caracteres",
+    "generic": "Se ha producido un error. Inténtalo de nuevo.",
+    "not_found": "No encontrado"
+  },
+  "labels": {
+    "email": "Email",
+    "password": "Contraseña",
+    "name": "Nombre",
+    "phone": "Teléfono",
+    "address": "Dirección",
+    "language": "Idioma",
+    "total": "Total",
+    "date": "Fecha",
+    "amount": "Importe",
+    "plan": "Plan",
+    "role": "Rol"
+  },
+  "languages": {
+    "ca": "Catalán",
+    "es": "Castellano",
+    "en": "Inglés"
+  },
+  "portal": {
+    "admin_title": "PORTAL ADMIN",
+    "client_title": "PORTAL CLIENTE",
+    "brand": "AMG"
+  }
+}

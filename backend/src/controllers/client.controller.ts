@@ -4,6 +4,8 @@ import { clientService, planService, usageService, getPlanHistory as fetchPlanHi
 import { createClientSchema, updateClientSchema, assignPlanSchema } from '../schemas/client'
 import { prisma } from '../db'
 import { signAccess } from '../utils/jwt'
+import { sendNotification } from '../services/notifications'
+import { startOnboarding } from '../services/onboarding.service'
 
 // ── Plans ────────────────────────────────────────────────────────────────
 
@@ -48,6 +50,25 @@ export const createClient = async (req: Request, res: Response, next: NextFuncti
         details:    { companyName: client.companyName },
       },
     })
+
+    // Email de benvinguda + inici onboarding (no bloquejar la resposta si falla)
+    if (!client.isTest) {
+      const activeSub = (client.subscriptions as any[])?.[0]
+      const planName  = activeSub?.plan?.name ?? 'Bàsic'
+      sendNotification({
+        to:    client.contactEmail,
+        event: 'WELCOME',
+        lang:  client.language,
+        data:  {
+          name:      client.contactName,
+          plan:      planName,
+          portalUrl: process.env.PORTAL_URL ?? process.env.BASE_URL ?? '',
+        },
+      }).catch(err => console.error('[client] welcome email error:', err))
+
+      startOnboarding(client.id, planName)
+        .catch(err => console.error('[client] onboarding start error:', err))
+    }
 
     res.status(201).json({ success: true, message: 'Client creat', data: client })
   } catch (err) { next(err) }

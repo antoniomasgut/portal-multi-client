@@ -5,16 +5,19 @@ import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
 import rateLimit from 'express-rate-limit'
 
-import authRouter     from './routes/auth'
-import clientsRouter  from './routes/clients'
-import servicesRouter from './routes/services'
-import plansRouter    from './routes/plans'
-import settingsRouter from './routes/settings'
-import oauthRouter    from './routes/oauth'
-import invoicesRouter from './routes/invoices'
-import landingRouter  from './routes/landing'
-import portalRouter   from './routes/portal'
-import { errorHandler } from './middleware/errorHandler'
+import authRouter        from './routes/auth'
+import clientsRouter     from './routes/clients'
+import servicesRouter    from './routes/services'
+import plansRouter       from './routes/plans'
+import settingsRouter    from './routes/settings'
+import oauthRouter       from './routes/oauth'
+import invoicesRouter    from './routes/invoices'
+import landingRouter     from './routes/landing'
+import portalRouter      from './routes/portal'
+import automationsRouter from './routes/automations'
+import onboardingRouter  from './routes/onboarding'
+import reportingRouter   from './routes/reporting'
+import { errorHandler }  from './middleware/errorHandler'
 
 const app  = express()
 const PORT = process.env.PORT || 4000
@@ -58,9 +61,11 @@ app.use('/api/settings', settingsRouter)
 app.use('/api/oauth',    oauthRouter)
 app.use('/api/invoices', invoicesRouter)
 app.use('/api/landing',  landingRouter)
-app.use('/api/portal',   portalRouter)
-// Pròxims mòduls:
-// app.use('/api/billing',  billingRouter)    // Mòdul 4
+app.use('/api/portal',       portalRouter)
+app.use('/api/clients',      automationsRouter)
+app.use('/api/automations',  automationsRouter)
+app.use('/api/onboarding',   onboardingRouter)
+app.use('/api/reports',      reportingRouter)
 
 // ── Middleware d'errors centralitzat ────────────────────────────────
 app.use(errorHandler)

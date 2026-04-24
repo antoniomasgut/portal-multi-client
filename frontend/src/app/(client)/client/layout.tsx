@@ -2,16 +2,21 @@
 import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { useAuthStore } from '../../../store/useAuthStore'
-
-const NAV_ITEMS = [
-  { label: 'DASHBOARD', href: '/client/dashboard' },
-  { label: 'FACTURES',  href: '/client/invoices'  },
-]
+import { useTranslation } from '../../../hooks/useTranslation'
+import { LanguageSwitcher } from '../../../components/LanguageSwitcher'
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter()
   const pathname = usePathname() ?? ''
   const { user, clearAuth, isImpersonating, stopImpersonate, isInitialized } = useAuthStore()
+  const { t }    = useTranslation('client')
+  const { t: tc } = useTranslation('common')
+
+  const NAV_ITEMS = [
+    { label: t('nav.dashboard'),    href: '/client/dashboard'    },
+    { label: t('nav.automations'),  href: '/client/automations'  },
+    { label: t('nav.invoices'),     href: '/client/invoices'      },
+  ]
 
   useEffect(() => {
     if (!isInitialized) return
@@ -38,14 +43,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               ADMIN
             </span>
             <p className="font-mono text-[10px] text-[#60a5fa] tracking-wider">
-              Estàs accedint com a <span className="font-bold">{user.email}</span>
+              {tc('impersonate.banner', { email: user.email })}
             </p>
           </div>
           <button
             onClick={handleStopImpersonate}
             className="font-mono text-[10px] tracking-widest text-[#60a5fa] hover:text-white border border-[#60a5fa]/40 hover:border-[#60a5fa] px-3 py-1 transition-all"
           >
-            ← TORNAR A ADMIN
+            {tc('actions.return_admin')}
           </button>
         </div>
       )}
@@ -57,7 +62,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
           {/* Brand */}
           <div className="px-5 py-5 border-b border-[var(--border)]">
-            <p className="font-mono text-[8px] tracking-[4px] text-[#FF6B00] uppercase">Portal Client</p>
+            <p className="font-mono text-[8px] tracking-[4px] text-[#FF6B00] uppercase">{tc('portal.client_title')}</p>
             <p className="font-orbitron font-black text-[13px] text-[var(--text)] mt-0.5 leading-tight truncate">
               {user.email.split('@')[0].toUpperCase()}
             </p>
@@ -83,22 +88,23 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             })}
           </nav>
 
-          {/* User */}
-          <div className="border-t border-[var(--border)] px-5 py-4">
-            <p className="font-mono text-[9px] text-[var(--text-muted)] truncate mb-1">{user.email}</p>
+          {/* Language + User */}
+          <div className="border-t border-[var(--border)] px-5 py-4 space-y-3">
+            <LanguageSwitcher />
+            <p className="font-mono text-[9px] text-[var(--text-muted)] truncate">{user.email}</p>
             {isImpersonating() ? (
               <button
                 onClick={handleStopImpersonate}
                 className="font-mono text-[9px] tracking-widest text-[#60a5fa] hover:text-white transition-colors"
               >
-                ← TORNAR A ADMIN
+                {tc('actions.return_admin')}
               </button>
             ) : (
               <button
                 onClick={() => { clearAuth(); router.push('/login') }}
                 className="font-mono text-[9px] tracking-widest text-[var(--text-muted)] hover:text-[#ff4444] transition-colors"
               >
-                SORTIR
+                {tc('actions.logout')}
               </button>
             )}
           </div>
@@ -107,7 +113,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         {/* ── Main ────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col overflow-hidden">
           <header className="h-[70px] shrink-0 border-b border-[var(--border)] bg-[var(--bg-1)]/80 backdrop-blur-sm flex items-center px-6">
-            <p className="font-mono text-[9px] tracking-[3px] text-[var(--text-muted)] uppercase">PORTAL CLIENT</p>
+            <p className="font-mono text-[9px] tracking-[3px] text-[var(--text-muted)] uppercase">{tc('portal.client_title')}</p>
           </header>
           <main className="flex-1 overflow-y-auto">
             {children}

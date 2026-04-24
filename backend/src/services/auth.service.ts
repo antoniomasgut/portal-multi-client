@@ -3,6 +3,8 @@ import crypto from 'crypto'
 import { prisma } from '../db'
 import { signAccess, signRefresh, verifyRefresh } from '../utils/jwt'
 import type { LoginDTO } from '../schemas/auth'
+import { sendNotification } from './notifications'
+import { markAccessed } from './onboarding.service'
 
 const MAGIC_LINK_EXPIRY_HOURS = 24
 
@@ -29,6 +31,10 @@ export const login = async (dto: LoginDTO, ip: string) => {
   await prisma.auditLog.create({
     data: { userId: user.id, action: 'LOGIN', entityType: 'User', entityId: user.id, ip },
   }).catch(() => {})
+
+  if (user.clientId) {
+    markAccessed(user.clientId).catch(() => {})
+  }
 
   const payload = { userId: user.id, role: user.role, clientId: user.clientId }
   return {
@@ -78,9 +84,22 @@ export const requestMagicLink = async (email: string) => {
 
   await prisma.magicLinkToken.create({ data: { email, token, expiresAt } })
 
-  // TODO Mòdul 13: enviar email amb el link
   const magicUrl = `${process.env.BASE_URL}/magic-link/${token}`
-  console.log(`[magic-link] ${email} → ${magicUrl}`)
+
+  const clientLang = await prisma.client.findFirst({
+    where: { contactEmail: email, deletedAt: null },
+    select: { language: true, contactName: true },
+  })
+
+  sendNotification({
+    to:    email,
+    event: 'MAGIC_LINK',
+    lang:  clientLang?.language ?? 'ca',
+    data:  {
+      name:         clientLang?.contactName ?? email.split('@')[0],
+      magicLinkUrl: magicUrl,
+    },
+  }).catch(err => console.error('[magic-link] email error:', err))
 
   return token
 }
@@ -114,6 +133,10 @@ export const verifyMagicLink = async (token: string, ip: string) => {
   await prisma.auditLog.create({
     data: { userId: user.id, action: 'LOGIN_MAGIC_LINK', entityType: 'User', entityId: user.id, ip },
   }).catch(() => {})
+
+  if (user.clientId) {
+    markAccessed(user.clientId).catch(() => {})
+  }
 
   const payload = { userId: user.id, role: user.role, clientId: user.clientId }
   return {

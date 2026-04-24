@@ -189,6 +189,173 @@ async function main() {
     console.log(`  Client de prova ja existeix: ${testClientEmail}`)
   }
 
+  // ── Templates d'automatització (10 inicials) ─────────────────────────
+  const AUTOMATION_TEMPLATES = [
+    {
+      slug: 'reserva-cita', name: 'Reserva de cita', category: 'booking',
+      description: 'WhatsApp → Google Calendar. El bot recull les dades i crea la cita automàticament.',
+      workflowJson: {
+        name: 'AMG — Reserva de cita ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Webhook WhatsApp', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'whatsapp-{{CLIENT_ID}}', httpMethod: 'POST', responseMode: 'responseNode' } },
+          { id: 'set', name: 'Extreure dades', type: 'n8n-nodes-base.set', typeVersion: 3, position: [450, 300],
+            parameters: { assignments: { assignments: [
+              { id: 'client_id', name: 'clientId', value: '{{CLIENT_ID}}', type: 'string' },
+              { id: 'client_email', name: 'clientEmail', value: '{{CLIENT_EMAIL}}', type: 'string' },
+            ]}}},
+        ],
+        connections: { 'Webhook WhatsApp': { main: [[{ node: 'Extreure dades', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'pressupost-auto', name: 'Pressupost automàtic', category: 'sales',
+      description: 'Formulari web → genera PDF de pressupost → envia per email.',
+      workflowJson: {
+        name: 'AMG — Pressupost automàtic ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Formulari pressupost', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'pressupost-{{CLIENT_ID}}', httpMethod: 'POST' } },
+          { id: 'email', name: 'Enviar pressupost', type: 'n8n-nodes-base.emailSend', typeVersion: 2, position: [450, 300],
+            parameters: { fromEmail: '{{CLIENT_EMAIL}}', subject: 'El teu pressupost personalitzat' } },
+        ],
+        connections: { 'Formulari pressupost': { main: [[{ node: 'Enviar pressupost', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'recordatori-cita', name: 'Recordatori de cita', category: 'booking',
+      description: 'Envia WhatsApp de recordatori 24h abans de cada cita al Google Calendar.',
+      workflowJson: {
+        name: 'AMG — Recordatori de cita ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'cron', name: 'Check diari', type: 'n8n-nodes-base.scheduleTrigger', typeVersion: 1, position: [250, 300],
+            parameters: { rule: { interval: [{ field: 'hours', hoursInterval: 1 }] } } },
+          { id: 'whatsapp', name: 'Enviar recordatori', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [450, 300],
+            parameters: { url: 'https://graph.facebook.com/v18.0/messages', method: 'POST' } },
+        ],
+        connections: { 'Check diari': { main: [[{ node: 'Enviar recordatori', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'recollida-ressenyes', name: 'Recollida de ressenyes', category: 'marketing',
+      description: 'Post-servei → WhatsApp automàtic demanant valoració → guarda a Google Sheets.',
+      workflowJson: {
+        name: 'AMG — Recollida de ressenyes ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Trigger post-servei', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'ressenya-{{CLIENT_ID}}', httpMethod: 'POST' } },
+          { id: 'sheets', name: 'Guardar a Sheets', type: 'n8n-nodes-base.googleSheets', typeVersion: 4, position: [450, 300],
+            parameters: { operation: 'append', documentId: '', sheetName: 'Ressenyes' } },
+        ],
+        connections: { 'Trigger post-servei': { main: [[{ node: 'Guardar a Sheets', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'resposta-leads-web', name: 'Resposta leads web', category: 'sales',
+      description: 'Formulari web → WhatsApp immediatament al lead + notificació al propietari.',
+      workflowJson: {
+        name: 'AMG — Resposta leads web ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Formulari web', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'lead-{{CLIENT_ID}}', httpMethod: 'POST' } },
+          { id: 'notify', name: 'Notificar propietari', type: 'n8n-nodes-base.emailSend', typeVersion: 2, position: [450, 300],
+            parameters: { toEmail: '{{CLIENT_EMAIL}}', subject: 'Nou lead rebut' } },
+        ],
+        connections: { 'Formulari web': { main: [[{ node: 'Notificar propietari', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'factura-servei', name: 'Factura de servei', category: 'billing',
+      description: 'Servei completat → genera factura PDF → envia per email al client.',
+      workflowJson: {
+        name: 'AMG — Factura de servei ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Servei completat', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'factura-{{CLIENT_ID}}', httpMethod: 'POST' } },
+          { id: 'api', name: 'Generar factura portal', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [450, 300],
+            parameters: { url: '{{PORTAL_API_URL}}/api/invoices', method: 'POST',
+              headers: { parameters: [{ name: 'Authorization', value: 'Bearer {{WEBHOOK_SECRET}}' }] } } },
+        ],
+        connections: { 'Servei completat': { main: [[{ node: 'Generar factura portal', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'missatge-benvinguda', name: 'Missatge de benvinguda', category: 'onboarding',
+      description: 'Primer contacte via WhatsApp → missatge de benvinguda personalitzat.',
+      workflowJson: {
+        name: 'AMG — Benvinguda ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Primer contacte', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'benvinguda-{{CLIENT_ID}}', httpMethod: 'POST' } },
+          { id: 'set', name: 'Preparar resposta', type: 'n8n-nodes-base.set', typeVersion: 3, position: [450, 300],
+            parameters: { assignments: { assignments: [{ id: 'msg', name: 'message', value: 'Benvingut/da! Som {{CLIENT_NAME}}.', type: 'string' }] } } },
+        ],
+        connections: { 'Primer contacte': { main: [[{ node: 'Preparar resposta', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'recuperacio-client', name: 'Recuperació client inactiu', category: 'retention',
+      description: 'Clients sense contacte 30 dies → WhatsApp de reactivació automàtic.',
+      workflowJson: {
+        name: 'AMG — Recuperació clients ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'cron', name: 'Check setmanal', type: 'n8n-nodes-base.scheduleTrigger', typeVersion: 1, position: [250, 300],
+            parameters: { rule: { interval: [{ field: 'weeks', weeksInterval: 1 }] } } },
+          { id: 'sheets', name: 'Llegir clients inactius', type: 'n8n-nodes-base.googleSheets', typeVersion: 4, position: [450, 300],
+            parameters: { operation: 'read', documentId: '' } },
+        ],
+        connections: { 'Check setmanal': { main: [[{ node: 'Llegir clients inactius', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'confirmacio-comanda', name: 'Confirmació de comanda', category: 'ecommerce',
+      description: 'Nova comanda → WhatsApp de confirmació → actualitza stock a Google Sheets.',
+      workflowJson: {
+        name: 'AMG — Confirmació comanda ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Nova comanda', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'comanda-{{CLIENT_ID}}', httpMethod: 'POST' } },
+          { id: 'sheets', name: 'Actualitzar stock', type: 'n8n-nodes-base.googleSheets', typeVersion: 4, position: [450, 300],
+            parameters: { operation: 'update', documentId: '', sheetName: 'Stock' } },
+        ],
+        connections: { 'Nova comanda': { main: [[{ node: 'Actualitzar stock', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'alerta-estoc', name: "Alerta d'estoc baix", category: 'ecommerce',
+      description: 'Stock < mínim → WhatsApp alert al propietari + email automàtic de recomanda.',
+      workflowJson: {
+        name: "AMG — Alerta estoc baix ({{CLIENT_NAME}})",
+        nodes: [
+          { id: 'cron', name: 'Check diari estoc', type: 'n8n-nodes-base.scheduleTrigger', typeVersion: 1, position: [250, 300],
+            parameters: { rule: { interval: [{ field: 'days', daysInterval: 1 }] } } },
+          { id: 'email', name: 'Alerta propietari', type: 'n8n-nodes-base.emailSend', typeVersion: 2, position: [450, 300],
+            parameters: { toEmail: '{{CLIENT_EMAIL}}', subject: "Alerta: estoc baix detectat" } },
+        ],
+        connections: { 'Check diari estoc': { main: [[{ node: 'Alerta propietari', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+  ]
+
+  for (const tmpl of AUTOMATION_TEMPLATES) {
+    await prisma.automationTemplate.upsert({
+      where:  { slug: tmpl.slug },
+      update: { name: tmpl.name, description: tmpl.description, category: tmpl.category, workflowJson: tmpl.workflowJson as any },
+      create: { slug: tmpl.slug, name: tmpl.name, description: tmpl.description, category: tmpl.category, workflowJson: tmpl.workflowJson as any, isActive: true },
+    })
+    console.log(`  Template: ${tmpl.name}`)
+  }
+
   console.log('Seed completat.')
 }
 

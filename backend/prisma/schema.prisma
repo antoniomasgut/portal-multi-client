@@ -176,6 +176,8 @@ model Client {
   oauthStates   OAuthState[]
   invoices      Invoice[]
   landing       ClientLanding?
+  automations   ClientAutomation[]
+  onboarding    OnboardingProgress?
 
   @@index([contactEmail])
   @@index([domain])
@@ -409,6 +411,103 @@ model PricingPolicy {
   @@map("pricing_policies")
 }
 
+// ── Onboarding ────────────────────────────────────────────────────────
+model OnboardingProgress {
+  id          String    @id @default(uuid())
+  clientId    String    @unique
+  day0SentAt  DateTime?
+  day1SentAt  DateTime?
+  day7SentAt  DateTime?
+  day15SentAt DateTime?
+  day30SentAt DateTime?
+  hasAccessed Boolean   @default(false)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  client      Client    @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@map("onboarding_progress")
+}
+
+// ── Automatitzacions n8n ──────────────────────────────────────────────
+model AutomationTemplate {
+  id           String   @id @default(uuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  category     String   @default("general")
+  workflowJson Json
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  automations ClientAutomation[]
+
+  @@index([slug])
+  @@map("automation_templates")
+}
+
+model ClientAutomation {
+  id             String           @id @default(uuid())
+  clientId       String
+  templateId     String
+  name           String
+  n8nWorkflowId  String?
+  status         AutomationStatus @default(INACTIVE)
+  errorCount     Int              @default(0)
+  lastRunAt      DateTime?
+  lastError      String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  client     Client             @relation(fields: [clientId],   references: [id])
+  template   AutomationTemplate @relation(fields: [templateId], references: [id])
+  executions AutomationExecution[]
+
+  @@index([clientId])
+  @@index([status])
+  @@map("client_automations")
+}
+
+model AutomationExecution {
+  id             String          @id @default(uuid())
+  automationId   String
+  n8nExecutionId String?
+  status         ExecutionStatus @default(RUNNING)
+  tokensUsed     Int             @default(0)
+  durationMs     Int?
+  error          String?
+  startedAt      DateTime        @default(now())
+  finishedAt     DateTime?
+
+  automation ClientAutomation @relation(fields: [automationId], references: [id])
+
+  @@index([automationId])
+  @@index([status])
+  @@map("automation_executions")
+}
+
+// ── Notificacions per email ───────────────────────────────────────────
+model Notification {
+  id        String             @id @default(uuid())
+  type      NotificationEvent
+  recipient String
+  subject   String
+  status    NotificationStatus @default(PENDING)
+  attempts  Int                @default(0)
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([recipient])
+  @@index([type])
+  @@index([status])
+  @@map("notifications")
+}
+
 // ── Enums ─────────────────────────────────────────────────────────────
 enum Role {
   ADMIN
@@ -448,4 +547,35 @@ enum InvoiceStatus {
   PAID
   OVERDUE
   CANCELLED
+}
+
+enum AutomationStatus {
+  INACTIVE
+  ACTIVE
+  PAUSED
+  ERROR
+}
+
+enum ExecutionStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+enum NotificationEvent {
+  WELCOME
+  INVOICE_GENERATED
+  PAYMENT_REMINDER_7
+  PAYMENT_REMINDER_30
+  USAGE_WARNING_80
+  USAGE_LIMIT_100
+  MAGIC_LINK
+  OAUTH_CONNECTED
+  PLAN_CHANGED
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
 }

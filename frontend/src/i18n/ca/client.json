@@ -1,0 +1,29 @@
+{
+  "dashboard": {
+    "title": "El meu Portal",
+    "subscription": "Subscripció Activa",
+    "plan": "Pla",
+    "next_billing": "Proper cobrament",
+    "monthly_price": "Quota mensual",
+    "services": "Els meus Serveis",
+    "usage": "Ús del pla",
+    "conversations": "Converses",
+    "tokens": "Tokens",
+    "automations": "Automatitzacions",
+    "no_subscription": "Sense subscripció activa"
+  },
+  "invoices": {
+    "title": "Les meves Factures",
+    "number": "Número",
+    "date": "Data",
+    "amount": "Import",
+    "status": "Estat",
+    "download": "DESCARREGAR",
+    "no_invoices": "Sense factures"
+  },
+  "nav": {
+    "dashboard": "DASHBOARD",
+    "automations": "AUTOMATITZACIONS",
+    "invoices": "FACTURES"
+  }
+}

@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
 import { invoiceService } from '../services/invoice.service'
+import { sendNotification } from '../services/notifications'
+import { prisma } from '../db'
 
 const generateSchema = z.object({
   clientId:   z.string().uuid(),
@@ -29,6 +31,31 @@ export const generateInvoice = async (req: Request, res: Response, next: NextFun
   try {
     const body    = generateSchema.parse(req.body)
     const invoice = await invoiceService.generate(body.clientId, body)
+
+    // Email de factura generada
+    const client = await prisma.client.findFirst({
+      where:  { id: body.clientId, deletedAt: null, isTest: false },
+      select: { contactEmail: true, contactName: true, language: true },
+    })
+    if (client) {
+      const month = new Date(invoice.issueDate).toLocaleDateString(
+        client.language === 'en' ? 'en-GB' : client.language === 'es' ? 'es-ES' : 'ca-ES',
+        { month: 'long', year: 'numeric' }
+      )
+      sendNotification({
+        to:    client.contactEmail,
+        event: 'INVOICE_GENERATED',
+        lang:  client.language,
+        data:  {
+          name:          client.contactName,
+          invoiceNumber: invoice.number,
+          amount:        String(invoice.total),
+          month,
+          portalUrl:     `${process.env.PORTAL_URL ?? process.env.BASE_URL ?? ''}/client/invoices`,
+        },
+      }).catch(err => console.error('[invoice] email error:', err))
+    }
+
     res.status(201).json({ success: true, message: 'Factura generada', data: invoice })
   } catch (err) { next(err) }
 }

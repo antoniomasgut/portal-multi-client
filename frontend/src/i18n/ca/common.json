@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "dashboard": "Tauler",
+    "clients": "Clients",
+    "billing": "Facturació",
+    "services": "Serveis",
+    "settings": "Configuració",
+    "invoices": "Factures",
+    "onboarding": "Onboarding",
+    "automations": "Automatitzacions"
+  },
+  "actions": {
+    "save": "DESAR",
+    "cancel": "CANCEL·LAR",
+    "delete": "ELIMINAR",
+    "create": "CREAR",
+    "edit": "EDITAR",
+    "close": "TANCAR",
+    "confirm": "CONFIRMAR",
+    "back": "TORNAR",
+    "send": "ENVIAR",
+    "loading": "CARREGANT...",
+    "logout": "SORTIR",
+    "return_admin": "← TORNAR A ADMIN"
+  },
+  "status": {
+    "active": "Actiu",
+    "suspended": "Suspès",
+    "cancelled": "Cancel·lat",
+    "pending": "Pendent",
+    "paid": "Pagat",
+    "overdue": "Vençut",
+    "draft": "Esborrany"
+  },
+  "errors": {
+    "required": "Camp obligatori",
+    "invalid_email": "Email no vàlid",
+    "min_length": "Mínim {{min}} caràcters",
+    "generic": "S'ha produït un error. Torna-ho a intentar.",
+    "not_found": "No s'ha trobat"
+  },
+  "labels": {
+    "email": "Email",
+    "password": "Contrasenya",
+    "name": "Nom",
+    "phone": "Telèfon",
+    "address": "Adreça",
+    "language": "Idioma",
+    "total": "Total",
+    "date": "Data",
+    "amount": "Import",
+    "plan": "Pla",
+    "role": "Rol"
+  },
+  "languages": {
+    "ca": "Català",
+    "es": "Castellà",
+    "en": "Anglès"
+  },
+  "portal": {
+    "admin_title": "PORTAL ADMIN",
+    "client_title": "PORTAL CLIENT",
+    "brand": "AMG"
+  }
+}

@@ -1,10 +1,10 @@
 # Progrés del Projecte
-Última actualització: 2026-04-19
+Última actualització: 2026-04-24
 
 ## Resum executiu
-- Fase actual: **1 — MVP** ✅ COMPLETADA
-- Mòduls completats: **13 / 13** (Fase 1)
-- Pròxim: **Fase 2 — Creixement**
+- Fase actual: **3 — Diferenciació** 🔄 EN PROGRÉS (Fase 2 completada)
+- Mòduls completats Fase 1: **13 / 13** ✅
+- Mòduls completats Fase 2: **6 / 6** ✅ FASE 2 COMPLETADA
 
 ---
 
@@ -47,12 +47,12 @@
 - [x] Mòdul 5  — Dashboard client
 
 ### Pendents — Fase 2 (Creixement)
-- [ ] Mòdul 6  — Automatitzacions n8n
-- [ ] Mòdul 10 — Multiidioma
-- [ ] Mòdul 13 — Notificacions Email
-- [ ] Mòdul 26 — Agent Onboarding
-- [ ] Mòdul 27 — Agent Reporting
-- [ ] Mòdul 37 — Templates Automatitzacions
+- [x] Mòdul 6  — Automatitzacions n8n
+- [x] Mòdul 10 — Multiidioma
+- [x] Mòdul 13 — Notificacions Email
+- [x] Mòdul 26 — Agent Onboarding
+- [x] Mòdul 27 — Agent Reporting
+- [x] Mòdul 37 — Templates Automatitzacions
 
 ### Pendents — Fase 3 (Diferenciació)
 - [ ] Mòdul 7  — Landing Pro (IA)
@@ -66,6 +66,38 @@
 ---
 
 ## Sessions recents
+
+### Sessió 2026-04-24 (Fase 2 completada)
+**Tasca:** Mòdul 26 (Onboarding) + Mòdul 27 (Reporting) + Mòdul 37 (Templates)
+
+**Mòdul 26 — Agent Onboarding (completat)**
+- `onboarding.service.ts` — seqüència dia 0/1/7/15/30, branching ACTIVE/INACTIVE dia 7
+- `OnboardingProgress` model ja existent a Prisma (del context anterior)
+- Plantilles email: ONBOARDING_DAY1, ONBOARDING_DAY7_ACTIVE, ONBOARDING_DAY7_INACTIVE, ONBOARDING_DAY15, ONBOARDING_DAY30
+- `startOnboarding()` connectat a `client.controller.ts` (createClient)
+- `markAccessed()` connectat a `auth.service.ts` (login + verifyMagicLink)
+- Rutes: `GET /api/onboarding`, `GET /api/onboarding/process`, `GET /api/onboarding/:id`
+- Pàgina admin `/admin/onboarding` amb taula de progrés per client, botó "PROCESSAR PENDENTS"
+
+**Mòdul 27 — Agent Reporting (completat)**
+- `reporting.service.ts` — PDFs amb PDFKit (admin setmanal + client mensual)
+- Graceful si GCS no configurat (genera PDF però no el puja)
+- Emails REPORT_ADMIN_WEEKLY, REPORT_CLIENT_MONTHLY connectats
+- Rutes: `POST /api/reports/admin/weekly`, `POST /api/reports/clients/monthly`, `POST /api/reports/clients/:id/monthly`
+
+**Mòdul 37 — Templates Automatitzacions (completat)**
+- `listTemplatesWithUsage()` — count de clients per template via groupBy
+- `createTemplate()`, `updateTemplate()`, `toggleTemplate()`, `testTemplate()` (crea+elimina workflow n8n)
+- Endpoints: `GET /usage`, `POST /templates`, `PATCH /:templateId`, `PATCH /:templateId/active`, `POST /:templateId/test`
+- Pàgina admin `/admin/automations` amb toggle actiu/inactiu, badge clients, test n8n, stats per categoria
+- Nav admin ampliat: Onboarding + Automatitzacions (ja existia als i18n)
+- TypeScript: 0 errors backend + 0 errors frontend
+
+**Pendent configurar per producció:**
+- `ADMIN_EMAIL` al .env per rebre informes setmanals
+- GCS credentials per pujar PDFs
+
+
 
 ### Sessió 2026-04-16
 **Tasca:** Completar Mòdul 1 i Mòdul 2 + disseny visual admin
@@ -103,6 +135,48 @@
 - Conflicte de nom `getPlanHistory` importat i exportat al mateix controlador
 
 **Branca:** `develop` — tots els canvis publicats
+
+---
+
+### Sessió 2026-04-24 (continuació)
+**Tasca:** Mòdul 6 — Automatitzacions n8n
+
+**Mòdul 6 — Automatitzacions n8n (completat)**
+- BD: models `AutomationTemplate`, `ClientAutomation`, `AutomationExecution` + enums `AutomationStatus`, `ExecutionStatus` → `prisma db push` ✅
+- Seed: 10 templates inicials (reserva cita, pressupost, recordatori, ressenyes, leads web, factura, benvinguda, recuperació, comanda, estoc) ✅
+- `src/services/n8n.service.ts` — wrapper API n8n (create/activate/deactivate/delete/executions) amb graceful error si n8n no disponible
+- `src/services/automation.service.ts` — lògica negoci (create, toggle, delete, recordExecution) amb notificació admin si 3 errors
+- `src/controllers/automation.controller.ts` + `src/routes/automations.ts` — endpoints REST
+- Rutes registrades: `GET/POST /api/clients/:id/automations`, `PATCH .../toggle`, `DELETE .../:autoId`, `POST /api/automations/webhook/execution`
+- Frontend hook: `useAutomations.ts` (useClientAutomations, useCreateAutomation, useToggleAutomation, useDeleteAutomation, useAutomationTemplates)
+- Frontend admin: `AutomationsPanel.tsx` integrat al `ClientServiceManager` per slug `automatitzacions`
+- Frontend client: `/client/automations/page.tsx` — vista amb toggle pause/resume i historial execucions
+- Layout client: nav ampliat amb "AUTOMATITZACIONS"
+- TypeScript: 0 errors backend + 0 errors frontend
+
+---
+
+### Sessió 2026-04-24
+**Tasca:** Mòdul 10 (Multiidioma) + Mòdul 13 (Notificacions Email)
+
+**Mòdul 10 — Multiidioma (completat)**
+- Fitxers de traducció JSON per ca/es/en: common, auth, admin, client
+- `useI18nStore` (Zustand) — idioma persistent a localStorage
+- `useTranslation(namespace)` — hook custom per App Router, imports estàtics (sense fetch)
+- `LanguageSwitcher` — component UI integrat al sidebar admin i client
+- Layouts admin i client migrats a `useTranslation` (nav, accions, títols)
+- Backend: `src/utils/i18n.ts` amb funció `t(key, lang, vars)` per emails i PDFs (ca/es/en)
+
+**Mòdul 13 — Notificacions Email (completat)**
+- Model `Notification` + enums `NotificationEvent` / `NotificationStatus` → `prisma db push` ✅
+- `src/services/emailTemplates.ts` — plantilles HTML inline per tots els events (WELCOME, INVOICE_GENERATED, PAYMENT_REMINDER, USAGE_WARNING, MAGIC_LINK, OAUTH_CONNECTED, PLAN_CHANGED)
+- `src/services/notifications.ts` — servei `sendNotification()` amb 3 reintents + registre a BD
+- Emails connectats: magic link (auth.service), benvinguda (client.controller), factura generada (invoice.controller)
+- `.env.example` actualitzat: `SMTP_FROM`, `PORTAL_URL`
+- TypeScript: 0 errors backend + 0 errors frontend
+
+**Pendent configurar per producció:**
+- Variables SMTP_USER / SMTP_PASS amb credencials reals (Mailtrap per dev ja configurat)
 
 ---
 

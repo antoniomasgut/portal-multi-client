@@ -1,0 +1,29 @@
+{
+  "dashboard": {
+    "title": "Mi Portal",
+    "subscription": "Suscripción Activa",
+    "plan": "Plan",
+    "next_billing": "Próximo cobro",
+    "monthly_price": "Cuota mensual",
+    "services": "Mis Servicios",
+    "usage": "Uso del plan",
+    "conversations": "Conversaciones",
+    "tokens": "Tokens",
+    "automations": "Automatizaciones",
+    "no_subscription": "Sin suscripción activa"
+  },
+  "invoices": {
+    "title": "Mis Facturas",
+    "number": "Número",
+    "date": "Fecha",
+    "amount": "Importe",
+    "status": "Estado",
+    "download": "DESCARGAR",
+    "no_invoices": "Sin facturas"
+  },
+  "nav": {
+    "dashboard": "PANEL",
+    "automations": "AUTOMATIZACIONES",
+    "invoices": "FACTURAS"
+  }
+}

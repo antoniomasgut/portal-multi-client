@@ -1,0 +1,65 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "billing": "Billing",
+    "services": "Services",
+    "settings": "Settings",
+    "invoices": "Invoices",
+    "onboarding": "Onboarding",
+    "automations": "Automations"
+  },
+  "actions": {
+    "save": "SAVE",
+    "cancel": "CANCEL",
+    "delete": "DELETE",
+    "create": "CREATE",
+    "edit": "EDIT",
+    "close": "CLOSE",
+    "confirm": "CONFIRM",
+    "back": "BACK",
+    "send": "SEND",
+    "loading": "LOADING...",
+    "logout": "LOG OUT",
+    "return_admin": "← BACK TO ADMIN"
+  },
+  "status": {
+    "active": "Active",
+    "suspended": "Suspended",
+    "cancelled": "Cancelled",
+    "pending": "Pending",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "draft": "Draft"
+  },
+  "errors": {
+    "required": "Required field",
+    "invalid_email": "Invalid email",
+    "min_length": "Minimum {{min}} characters",
+    "generic": "An error occurred. Please try again.",
+    "not_found": "Not found"
+  },
+  "labels": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "language": "Language",
+    "total": "Total",
+    "date": "Date",
+    "amount": "Amount",
+    "plan": "Plan",
+    "role": "Role"
+  },
+  "languages": {
+    "ca": "Catalan",
+    "es": "Spanish",
+    "en": "English"
+  },
+  "portal": {
+    "admin_title": "ADMIN PORTAL",
+    "client_title": "CLIENT PORTAL",
+    "brand": "AMG"
+  }
+}

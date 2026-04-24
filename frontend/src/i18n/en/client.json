@@ -1,0 +1,29 @@
+{
+  "dashboard": {
+    "title": "My Portal",
+    "subscription": "Active Subscription",
+    "plan": "Plan",
+    "next_billing": "Next billing",
+    "monthly_price": "Monthly fee",
+    "services": "My Services",
+    "usage": "Plan usage",
+    "conversations": "Conversations",
+    "tokens": "Tokens",
+    "automations": "Automations",
+    "no_subscription": "No active subscription"
+  },
+  "invoices": {
+    "title": "My Invoices",
+    "number": "Number",
+    "date": "Date",
+    "amount": "Amount",
+    "status": "Status",
+    "download": "DOWNLOAD",
+    "no_invoices": "No invoices"
+  },
+  "nav": {
+    "dashboard": "DASHBOARD",
+    "automations": "AUTOMATIONS",
+    "invoices": "INVOICES"
+  }
+}

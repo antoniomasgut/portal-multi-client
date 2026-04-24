@@ -1,0 +1,53 @@
+{
+  "dashboard": {
+    "title": "Panel",
+    "total_clients": "Clientes Activos",
+    "mrr": "MRR",
+    "pending_invoices": "Facturas Pendientes",
+    "active_services": "Servicios Activos"
+  },
+  "clients": {
+    "title": "Clientes",
+    "new_client": "NUEVO CLIENTE",
+    "company": "Empresa",
+    "contact": "Contacto",
+    "plan": "Plan",
+    "status": "Estado",
+    "mrr": "MRR",
+    "actions": "Acciones",
+    "no_clients": "Sin clientes",
+    "setup": "SETUP",
+    "edit": "EDITAR",
+    "delete_confirm": "¿Seguro que quieres eliminar este cliente?",
+    "test_badge": "TEST"
+  },
+  "services": {
+    "title": "Servicios",
+    "setup_price": "Precio setup",
+    "monthly_price": "Precio mensual",
+    "activate": "ACTIVAR",
+    "deactivate": "DESACTIVAR",
+    "inactive": "INACTIVO"
+  },
+  "invoices": {
+    "title": "Facturación",
+    "new_invoice": "NUEVA FACTURA",
+    "number": "Número",
+    "client": "Cliente",
+    "amount": "Importe",
+    "status": "Estado",
+    "date": "Fecha",
+    "pay": "PAGAR",
+    "cancel": "CANCELAR",
+    "paid_confirm": "¿Marcar como pagada?",
+    "cancel_confirm": "¿Cancelar esta factura?"
+  },
+  "settings": {
+    "title": "Configuración",
+    "discount_policies": "Políticas de descuento",
+    "pricing_policy": "Política de precios"
+  },
+  "impersonate": {
+    "banner": "Estás accediendo como {{email}}"
+  }
+}

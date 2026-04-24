@@ -4,6 +4,7 @@ import { useToggleService } from '../../../../hooks/useServiceActivation'
 import LandingEditor from './LandingEditor'
 import ConnectionsPanel from './ConnectionsPanel'
 import CredentialsPanel from './CredentialsPanel'
+import AutomationsPanel from './AutomationsPanel'
 
 // ── Tipus ──────────────────────────────────────────────────────────────────────
 
@@ -94,11 +95,16 @@ function ServiceConfigPanel({ clientId, companyName, slug }: { clientId: string;
 
   if (slug === 'automatitzacions') {
     return (
-      <div className="space-y-4">
-        <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-3">Credencials n8n</p>
-        <ConnectionsPanel clientId={clientId} filterProvider="n8n" />
-        <div className="mt-3">
-          <CredentialsPanel clientId={clientId} filterService="n8n" />
+      <div className="space-y-6">
+        <div>
+          <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-3">Credencials n8n</p>
+          <ConnectionsPanel clientId={clientId} filterProvider="n8n" />
+          <div className="mt-3">
+            <CredentialsPanel clientId={clientId} filterService="n8n" />
+          </div>
+        </div>
+        <div className="border-t border-[var(--border)] pt-4">
+          <AutomationsPanel clientId={clientId} />
         </div>
       </div>
     )

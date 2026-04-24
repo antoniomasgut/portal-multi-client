@@ -1,0 +1,53 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "total_clients": "Active Clients",
+    "mrr": "MRR",
+    "pending_invoices": "Pending Invoices",
+    "active_services": "Active Services"
+  },
+  "clients": {
+    "title": "Clients",
+    "new_client": "NEW CLIENT",
+    "company": "Company",
+    "contact": "Contact",
+    "plan": "Plan",
+    "status": "Status",
+    "mrr": "MRR",
+    "actions": "Actions",
+    "no_clients": "No clients",
+    "setup": "SETUP",
+    "edit": "EDIT",
+    "delete_confirm": "Are you sure you want to delete this client?",
+    "test_badge": "TEST"
+  },
+  "services": {
+    "title": "Services",
+    "setup_price": "Setup price",
+    "monthly_price": "Monthly price",
+    "activate": "ACTIVATE",
+    "deactivate": "DEACTIVATE",
+    "inactive": "INACTIVE"
+  },
+  "invoices": {
+    "title": "Billing",
+    "new_invoice": "NEW INVOICE",
+    "number": "Number",
+    "client": "Client",
+    "amount": "Amount",
+    "status": "Status",
+    "date": "Date",
+    "pay": "PAY",
+    "cancel": "CANCEL",
+    "paid_confirm": "Mark as paid?",
+    "cancel_confirm": "Cancel this invoice?"
+  },
+  "settings": {
+    "title": "Settings",
+    "discount_policies": "Discount policies",
+    "pricing_policy": "Pricing policy"
+  },
+  "impersonate": {
+    "banner": "You are accessing as {{email}}"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "total_clients": "Clients Actius",
+    "mrr": "MRR",
+    "pending_invoices": "Factures Pendents",
+    "active_services": "Serveis Actius"
+  },
+  "clients": {
+    "title": "Clients",
+    "new_client": "NOU CLIENT",
+    "company": "Empresa",
+    "contact": "Contacte",
+    "plan": "Pla",
+    "status": "Estat",
+    "mrr": "MRR",
+    "actions": "Accions",
+    "no_clients": "Sense clients",
+    "setup": "SETUP",
+    "edit": "EDITAR",
+    "delete_confirm": "Segur que vols eliminar aquest client?",
+    "test_badge": "TEST"
+  },
+  "services": {
+    "title": "Serveis",
+    "setup_price": "Preu setup",
+    "monthly_price": "Preu mensual",
+    "activate": "ACTIVAR",
+    "deactivate": "DESACTIVAR",
+    "inactive": "INACTIU"
+  },
+  "invoices": {
+    "title": "Facturació",
+    "new_invoice": "NOVA FACTURA",
+    "number": "Número",
+    "client": "Client",
+    "amount": "Import",
+    "status": "Estat",
+    "date": "Data",
+    "pay": "PAGAR",
+    "cancel": "CANCEL·LAR",
+    "paid_confirm": "Marcar com a pagada?",
+    "cancel_confirm": "Cancel·lar aquesta factura?"
+  },
+  "settings": {
+    "title": "Configuració",
+    "discount_policies": "Polítiques de descompte",
+    "pricing_policy": "Política de preus"
+  },
+  "impersonate": {
+    "banner": "Estàs accedint com a {{email}}"
+  }
+}
