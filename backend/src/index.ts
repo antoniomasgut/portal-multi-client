@@ -18,6 +18,7 @@ import automationsRouter from './routes/automations'
 import onboardingRouter  from './routes/onboarding'
 import reportingRouter   from './routes/reporting'
 import rgpdRouter        from './routes/rgpd'
+import domainsRouter     from './routes/domains'
 import { errorHandler }  from './middleware/errorHandler'
 
 const app  = express()
@@ -68,6 +69,8 @@ app.use('/api/automations',  automationsRouter)
 app.use('/api/onboarding',   onboardingRouter)
 app.use('/api/reports',      reportingRouter)
 app.use('/api/clients',      rgpdRouter)
+app.use('/api/clients',      domainsRouter)
+app.use('/api',              domainsRouter)
 
 // ── Middleware d'errors centralitzat ────────────────────────────────
 app.use(errorHandler)

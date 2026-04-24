@@ -180,6 +180,7 @@ model Client {
   onboarding    OnboardingProgress?
   consents      ConsentLog[]
   dataExports   DataExportRequest[]
+  domains       ClientDomain[]
 
   @@index([contactEmail])
   @@index([domain])
@@ -491,6 +492,27 @@ model AutomationExecution {
   @@map("automation_executions")
 }
 
+// ── Dominis personalitzats ────────────────────────────────────────────
+
+model ClientDomain {
+  id           String       @id @default(uuid())
+  clientId     String
+  domain       String       @unique
+  status       DomainStatus @default(PENDING)
+  dnsToken     String       @unique
+  verifiedAt   DateTime?
+  lastChecked  DateTime?
+  errorMessage String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@index([status])
+  @@map("client_domains")
+}
+
 // ── Notificacions per email ───────────────────────────────────────────
 model Notification {
   id        String             @id @default(uuid())
@@ -613,6 +635,12 @@ enum NotificationEvent {
 enum NotificationStatus {
   PENDING
   SENT
+  FAILED
+}
+
+enum DomainStatus {
+  PENDING
+  VERIFIED
   FAILED
 }
 

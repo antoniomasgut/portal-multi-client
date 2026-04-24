@@ -7,7 +7,8 @@
     "settings": "Configuración",
     "invoices": "Facturas",
     "onboarding": "Onboarding",
-    "automations": "Automatizaciones"
+    "automations": "Automatizaciones",
+    "domains": "Dominios"
   },
   "actions": {
     "save": "GUARDAR",

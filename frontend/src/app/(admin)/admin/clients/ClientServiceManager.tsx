@@ -5,6 +5,7 @@ import LandingEditor from './LandingEditor'
 import ConnectionsPanel from './ConnectionsPanel'
 import CredentialsPanel from './CredentialsPanel'
 import AutomationsPanel from './AutomationsPanel'
+import { DomainsPanel } from './DomainsPanel'
 
 // ── Tipus ──────────────────────────────────────────────────────────────────────
 
@@ -108,6 +109,10 @@ function ServiceConfigPanel({ clientId, companyName, slug }: { clientId: string;
         </div>
       </div>
     )
+  }
+
+  if (slug === 'domini-personalitzat' || slug.includes('domini')) {
+    return <DomainsPanel clientId={clientId} />
   }
 
   return (

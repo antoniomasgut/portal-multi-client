@@ -13,6 +13,7 @@ const NAV_HREFS = [
   { key: 'nav.services',    href: '/admin/services'    },
   { key: 'nav.onboarding',  href: '/admin/onboarding'  },
   { key: 'nav.automations', href: '/admin/automations' },
+  { key: 'nav.domains',     href: '/admin/domains'     },
   { key: 'nav.settings',    href: '/admin/settings'    },
 ]
 
@@ -23,6 +24,7 @@ const PAGE_TITLE_KEYS: Record<string, string> = {
   '/admin/services':    'nav.services',
   '/admin/onboarding':  'nav.onboarding',
   '/admin/automations': 'nav.automations',
+  '/admin/domains':     'nav.domains',
   '/admin/settings':    'nav.settings',
 }
 

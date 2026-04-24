@@ -57,7 +57,7 @@
 ### Pendents — Fase 3 (Diferenciació)
 - [ ] Mòdul 7  — Landing Pro (IA)
 - [ ] Mòdul 8  — RAG / Alf
-- [ ] Mòdul 9  — Dominis + DNS
+- [x] Mòdul 9  — Dominis + DNS
 - [x] Mòdul 14 — RGPD Bàsic
 - [ ] Mòdul 24 — Proveïdors IA
 - [ ] Mòdul 25 — Agent Suport WhatsApp
@@ -66,6 +66,18 @@
 ---
 
 ## Sessions recents
+
+### Sessió 2026-04-24 (Fase 3 — Mòduls 14 + 9)
+
+**Mòdul 9 — Dominis + DNS (completat)**
+- BD: model `ClientDomain` + enum `DomainStatus` (PENDING/VERIFIED/FAILED) → `prisma db push` ✅
+- `domain.service.ts`: `addDomain`, `verifyDomain` (CNAME via `node:dns` + TXT fallback), `removeDomain`, `listAllDomains`, `getVerificationInstructions`
+- Endpoints: `GET|POST /api/clients/:id/domains`, `POST .../verify`, `GET .../instructions`, `DELETE .../:domainId`, `GET /api/domains`
+- `DomainsPanel.tsx` integrat a `ClientServiceManager` per slug `domini-*`
+- Pàgina admin `/admin/domains` — vista global amb stats verificats/pendents/fallats
+- Pàgina client `/client/domain` — instruccions DNS amb registres CNAME i TXT
+- Nav admin + client ampliat. Variables `.env.example`: `PORTAL_CNAME`, `ADMIN_EMAIL`
+- TypeScript: 0 errors backend + 0 errors frontend
 
 ### Sessió 2026-04-24 (Fase 3 — Mòdul 14)
 **Tasca:** Mòdul 14 — RGPD Bàsic

@@ -25,6 +25,7 @@
     "dashboard": "DASHBOARD",
     "automations": "AUTOMATITZACIONS",
     "invoices": "FACTURES",
+    "domain": "DOMINI",
     "privacy": "PRIVACITAT"
   }
 }

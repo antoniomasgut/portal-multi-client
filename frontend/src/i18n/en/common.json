@@ -7,7 +7,8 @@
     "settings": "Settings",
     "invoices": "Invoices",
     "onboarding": "Onboarding",
-    "automations": "Automations"
+    "automations": "Automations",
+    "domains": "Domains"
   },
   "actions": {
     "save": "SAVE",
