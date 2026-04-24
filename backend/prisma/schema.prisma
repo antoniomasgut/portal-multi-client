@@ -178,6 +178,8 @@ model Client {
   landing       ClientLanding?
   automations   ClientAutomation[]
   onboarding    OnboardingProgress?
+  consents      ConsentLog[]
+  dataExports   DataExportRequest[]
 
   @@index([contactEmail])
   @@index([domain])
@@ -508,6 +510,40 @@ model Notification {
   @@map("notifications")
 }
 
+// ── RGPD ─────────────────────────────────────────────────────────────
+
+model ConsentLog {
+  id          String      @id @default(uuid())
+  clientId    String
+  type        ConsentType
+  granted     Boolean
+  ip          String?
+  userAgent   String?
+  grantedAt   DateTime    @default(now())
+  revokedAt   DateTime?
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@index([type])
+  @@map("consent_logs")
+}
+
+model DataExportRequest {
+  id          String            @id @default(uuid())
+  clientId    String
+  status      ExportStatus      @default(PENDING)
+  gcsPath     String?
+  requestedAt DateTime          @default(now())
+  completedAt DateTime?
+  error       String?
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@map("data_export_requests")
+}
+
 // ── Enums ─────────────────────────────────────────────────────────────
 enum Role {
   ADMIN
@@ -577,5 +613,20 @@ enum NotificationEvent {
 enum NotificationStatus {
   PENDING
   SENT
+  FAILED
+}
+
+enum ConsentType {
+  COOKIES_NECESSARY
+  COOKIES_ANALYTICS
+  COOKIES_MARKETING
+  DATA_PROCESSING
+  COMMUNICATIONS
+}
+
+enum ExportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
   FAILED
 }

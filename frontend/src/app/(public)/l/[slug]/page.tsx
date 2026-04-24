@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import LandingRenderer, { type LandingData } from '../../../../components/LandingRenderer'
+import { CookieBanner } from '../../../../components/CookieBanner'
 
 async function getLanding(slug: string): Promise<LandingData | null> {
   try {
@@ -16,7 +17,12 @@ async function getLanding(slug: string): Promise<LandingData | null> {
 export default async function LandingPage({ params }: { params: { slug: string } }) {
   const landing = await getLanding(params.slug)
   if (!landing) notFound()
-  return <LandingRenderer landing={landing} />
+  return (
+    <>
+      <LandingRenderer landing={landing} />
+      <CookieBanner />
+    </>
+  )
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {

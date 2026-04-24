@@ -24,6 +24,7 @@
   "nav": {
     "dashboard": "PANEL",
     "automations": "AUTOMATIZACIONES",
-    "invoices": "FACTURAS"
+    "invoices": "FACTURAS",
+    "privacy": "PRIVACIDAD"
   }
 }

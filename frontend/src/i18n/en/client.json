@@ -24,6 +24,7 @@
   "nav": {
     "dashboard": "DASHBOARD",
     "automations": "AUTOMATIONS",
-    "invoices": "INVOICES"
+    "invoices": "INVOICES",
+    "privacy": "PRIVACY"
   }
 }

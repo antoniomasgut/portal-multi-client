@@ -16,6 +16,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     { label: t('nav.dashboard'),    href: '/client/dashboard'    },
     { label: t('nav.automations'),  href: '/client/automations'  },
     { label: t('nav.invoices'),     href: '/client/invoices'      },
+    { label: t('nav.privacy'),      href: '/client/privacy'       },
   ]
 
   useEffect(() => {

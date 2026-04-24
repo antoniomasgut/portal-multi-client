@@ -58,7 +58,7 @@
 - [ ] Mòdul 7  — Landing Pro (IA)
 - [ ] Mòdul 8  — RAG / Alf
 - [ ] Mòdul 9  — Dominis + DNS
-- [ ] Mòdul 14 — RGPD Bàsic
+- [x] Mòdul 14 — RGPD Bàsic
 - [ ] Mòdul 24 — Proveïdors IA
 - [ ] Mòdul 25 — Agent Suport WhatsApp
 - [ ] Mòdul 38 — Constructor Workflows IA
@@ -66,6 +66,25 @@
 ---
 
 ## Sessions recents
+
+### Sessió 2026-04-24 (Fase 3 — Mòdul 14)
+**Tasca:** Mòdul 14 — RGPD Bàsic
+
+**Mòdul 14 — RGPD Bàsic (completat)**
+- BD: models `ConsentLog` + `DataExportRequest` + enums `ConsentType` / `ExportStatus` → `prisma db push` ✅
+- `rgpd.service.ts`: `logConsent`, `getActiveConsents`, `requestDataExport` (async en background), `getExportDownloadUrl`, `anonymizeClient` (transacció: anonimitza client + usuaris + revoca consentiments)
+- Exportació JSON: client, subscripcions, factures, automatitzacions, consentiments, audit log (últims 200)
+- `GET|POST /api/clients/:id/consent` — gestió consentiments
+- `POST|GET /api/clients/:id/data-export` — sol·licitar i llistar exportacions
+- `GET /api/clients/:id/data-export/:exportId/download` — URL signada GCS (1h)
+- `DELETE /api/clients/:id/anonymize` — dret d'oblit (admin)
+- `CookieBanner.tsx` — banner inline styles (compatible Server Components), toggle analítiques/màrqueting, desa a localStorage
+- Banner integrat a les landings públiques `/l/[slug]`
+- Pàgina client `/client/privacy` — toggle consentiments, sol·licitar exportació, dret d'oblit via email
+- Nav client ampliat amb "PRIVACITAT"
+- TypeScript: 0 errors backend + 0 errors frontend
+
+
 
 ### Sessió 2026-04-24 (Fase 2 completada)
 **Tasca:** Mòdul 26 (Onboarding) + Mòdul 27 (Reporting) + Mòdul 37 (Templates)
