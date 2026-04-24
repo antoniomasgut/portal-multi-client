@@ -59,13 +59,27 @@
 - [ ] Mòdul 8  — RAG / Alf
 - [x] Mòdul 9  — Dominis + DNS
 - [x] Mòdul 14 — RGPD Bàsic
-- [ ] Mòdul 24 — Proveïdors IA
+- [x] Mòdul 24 — Proveïdors IA
 - [ ] Mòdul 25 — Agent Suport WhatsApp
 - [ ] Mòdul 38 — Constructor Workflows IA
 
 ---
 
 ## Sessions recents
+
+### Sessió 2026-04-24 (Fase 3 — Mòduls 14 + 9 + 24)
+
+**Mòdul 24 — Proveïdors IA (completat)**
+- BD: model `AIProvider` + enum `AIProviderType` (GROQ/OLLAMA/OPENAI/ANTHROPIC) → `prisma db push` ✅
+- `ai-provider.service.ts`: CRUD + `getClientConfig` (desencripta API keys per al servei FastAPI), `listAll`
+- API keys encriptades AES-256-GCM; endpoint `/config` protegit per `INTERNAL_API_SECRET` (sense JWT)
+- Models disponibles per proveïdor: Groq (llama-3.3-70b, mixtral), Ollama (llama3.2, gemma3), OpenAI (gpt-4o), Anthropic (claude-haiku/sonnet/opus)
+- Endpoints: `GET|POST /api/clients/:id/ai-providers`, `PATCH|DELETE .../providerId`, `GET .../config`, `GET /api/ai-providers` (global), `GET /api/ai-providers/models`
+- `AIProvidersPanel.tsx`: selecció proveïdor, dropdown model, camp API key (màscara), URL base Ollama, toggle actiu/inactiu, prioritat
+- Integrat al `ClientServiceManager` per slugs que contenen `ia`/`rag`/`ai`
+- Pàgina `/admin/ai-providers` amb stats per proveïdor i taula global
+- Nav admin ampliat amb "Proveïdors IA". Variable `.env.example`: `INTERNAL_API_SECRET`
+- TypeScript: 0 errors backend + 0 errors frontend
 
 ### Sessió 2026-04-24 (Fase 3 — Mòduls 14 + 9)
 

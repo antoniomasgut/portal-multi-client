@@ -19,6 +19,7 @@ import onboardingRouter  from './routes/onboarding'
 import reportingRouter   from './routes/reporting'
 import rgpdRouter        from './routes/rgpd'
 import domainsRouter     from './routes/domains'
+import aiProvidersRouter from './routes/ai-providers'
 import { errorHandler }  from './middleware/errorHandler'
 
 const app  = express()
@@ -71,6 +72,8 @@ app.use('/api/reports',      reportingRouter)
 app.use('/api/clients',      rgpdRouter)
 app.use('/api/clients',      domainsRouter)
 app.use('/api',              domainsRouter)
+app.use('/api/clients',      aiProvidersRouter)
+app.use('/api',              aiProvidersRouter)
 
 // ── Middleware d'errors centralitzat ────────────────────────────────
 app.use(errorHandler)

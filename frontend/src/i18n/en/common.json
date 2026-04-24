@@ -8,7 +8,8 @@
     "invoices": "Invoices",
     "onboarding": "Onboarding",
     "automations": "Automations",
-    "domains": "Domains"
+    "domains": "Domains",
+    "ai_providers": "AI Providers"
   },
   "actions": {
     "save": "SAVE",

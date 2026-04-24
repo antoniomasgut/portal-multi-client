@@ -181,6 +181,7 @@ model Client {
   consents      ConsentLog[]
   dataExports   DataExportRequest[]
   domains       ClientDomain[]
+  aiProviders   AIProvider[]
 
   @@index([contactEmail])
   @@index([domain])
@@ -492,6 +493,29 @@ model AutomationExecution {
   @@map("automation_executions")
 }
 
+// ── Proveïdors IA per client ──────────────────────────────────────────
+
+model AIProvider {
+  id           String          @id @default(uuid())
+  clientId     String
+  provider     AIProviderType
+  model        String
+  apiKeyEnc    String?
+  apiKeyIv     String?
+  apiKeyTag    String?
+  baseUrl      String?
+  isActive     Boolean         @default(true)
+  priority     Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@index([provider])
+  @@map("ai_providers")
+}
+
 // ── Dominis personalitzats ────────────────────────────────────────────
 
 model ClientDomain {
@@ -636,6 +660,13 @@ enum NotificationStatus {
   PENDING
   SENT
   FAILED
+}
+
+enum AIProviderType {
+  GROQ
+  OLLAMA
+  OPENAI
+  ANTHROPIC
 }
 
 enum DomainStatus {

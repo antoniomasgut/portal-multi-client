@@ -8,7 +8,8 @@
     "invoices": "Facturas",
     "onboarding": "Onboarding",
     "automations": "Automatizaciones",
-    "domains": "Dominios"
+    "domains": "Dominios",
+    "ai_providers": "Proveedores IA"
   },
   "actions": {
     "save": "GUARDAR",

@@ -8,7 +8,8 @@
     "invoices": "Factures",
     "onboarding": "Onboarding",
     "automations": "Automatitzacions",
-    "domains": "Dominis"
+    "domains": "Dominis",
+    "ai_providers": "Proveïdors IA"
   },
   "actions": {
     "save": "DESAR",

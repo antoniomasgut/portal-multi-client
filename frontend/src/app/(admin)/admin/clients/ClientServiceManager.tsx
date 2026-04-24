@@ -6,6 +6,7 @@ import ConnectionsPanel from './ConnectionsPanel'
 import CredentialsPanel from './CredentialsPanel'
 import AutomationsPanel from './AutomationsPanel'
 import { DomainsPanel } from './DomainsPanel'
+import { AIProvidersPanel } from './AIProvidersPanel'
 
 // ── Tipus ──────────────────────────────────────────────────────────────────────
 
@@ -113,6 +114,10 @@ function ServiceConfigPanel({ clientId, companyName, slug }: { clientId: string;
 
   if (slug === 'domini-personalitzat' || slug.includes('domini')) {
     return <DomainsPanel clientId={clientId} />
+  }
+
+  if (slug.includes('ia') || slug.includes('rag') || slug.includes('ai')) {
+    return <AIProvidersPanel clientId={clientId} />
   }
 
   return (
