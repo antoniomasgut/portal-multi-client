@@ -54,9 +54,10 @@ export const errorHandler = (
 
   // Errors coneguts amb statusCode
   const status = err.status || err.statusCode || 500
-  const message = status < 500 ? err.message : 'Error intern del servidor'
+  // 503 = servei no disponible (IA no conf.) → mostrar missatge; 500 = bug → ocultar
+  const message = (status < 500 || status === 503) ? err.message : 'Error intern del servidor'
 
-  if (status >= 500) {
+  if (status >= 500 && status !== 503) {
     console.error('[ERROR]', err)
   }
 

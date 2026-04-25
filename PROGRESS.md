@@ -2,7 +2,7 @@
 Última actualització: 2026-04-24
 
 ## Resum executiu
-- Fase actual: **3 — Diferenciació** 🔄 EN PROGRÉS (Fase 2 completada)
+- Fase actual: **3 — Diferenciació** ✅ COMPLETADA (Fase 2 completada)
 - Mòduls completats Fase 1: **13 / 13** ✅
 - Mòduls completats Fase 2: **6 / 6** ✅ FASE 2 COMPLETADA
 
@@ -27,6 +27,10 @@
 | 4  — Facturació    | 2026-04-16 | Invoice+InvoiceItem models, numeració auto (YYYY-NNNN), càlcul de descomptes actius, stats, /admin/invoices page, modal generar, accions pagar/cancel·lar |
 | 5  — Dashboard client | 2026-04-16 | Portal client /client/dashboard (subscripció, serveis, barres d'ús), /client/invoices, layout CLIENT amb auth guard, redirecció automàtica per rol |
 | 40 — Activació Serveis | 2026-04-19 | Camp `active`+`activatedAt` a `subscription_services`, endpoint `PATCH /api/clients/:id/services/:serviceId/active`, `ClientServiceManager` amb toggle per servei, panels de config (Landing/WhatsApp/n8n) + tutorial colapsable per cada servei |
+| 7  — Landing Pro IA    | 2026-04-24 | `ai-generate.service.ts` amb suport 4 proveïdors (Groq/OpenAI/Anthropic/Ollama), fallback env key, `generateLandingContent`, botó IA al LandingEditor |
+| 25 — Agent Suport WhatsApp | 2026-04-24 | `WhatsAppBotConfig` BD, endpoints GET/PUT/generate, `WhatsAppBotPanel.tsx` amb FAQs editor + generació IA, integrat a ClientServiceManager |
+| 8  — RAG / Alf         | 2026-04-24 | `RAGDocument` BD, upload multer 20MB, async indexDocument→FastAPI, drag&drop panel, polling 5s, re-index, status badges |
+| 38 — Constructor Workflows IA | 2026-04-24 | Modal crear/editar templates n8n amb JSON editor, validació, auto-slug, integrat a `/admin/automations` |
 
 ### 🔄 En progrés
 *(cap)*
@@ -55,17 +59,67 @@
 - [x] Mòdul 37 — Templates Automatitzacions
 
 ### Pendents — Fase 3 (Diferenciació)
-- [ ] Mòdul 7  — Landing Pro (IA)
-- [ ] Mòdul 8  — RAG / Alf
+- [x] Mòdul 7  — Landing Pro (IA)
+- [x] Mòdul 8  — RAG / Alf
 - [x] Mòdul 9  — Dominis + DNS
 - [x] Mòdul 14 — RGPD Bàsic
 - [x] Mòdul 24 — Proveïdors IA
-- [ ] Mòdul 25 — Agent Suport WhatsApp
-- [ ] Mòdul 38 — Constructor Workflows IA
+- [x] Mòdul 25 — Agent Suport WhatsApp
+- [x] Mòdul 38 — Constructor Workflows IA
 
 ---
 
 ## Sessions recents
+
+### Sessió 2026-04-25 (Verificació i QA completes — Fase 1+2+3)
+
+**Verificació i proves E2E**
+- Rebuild Docker backend: imatge nova amb tots els mòduls Fase 2+3 (domains, automations, onboarding, reporting, rgpd, ai-providers, whatsapp-bot, rag)
+- Test complet API: 18 endpoints coberts (auth, plans, serveis, clients, landing, factures, settings, onboarding, reporting, automatitzacions, dominis, RGPD, credencials, ai-providers, whatsapp-bot, RAG)
+- 2 landings publicades amb dades reals: Ca Na Rebecca (gradient-hero) + Forn de Pa Roca (minimal-light)
+- Dades de prova afegides: domini canarebecca.cat, credencial ACCESS_TOKEN, AI provider GROQ, consents RGPD, config WhatsApp bot
+
+**Millores aplicades (QA)**
+- `LandingEditor.tsx`: validació `ctaUrl` ampliada → accepta `https://`, `tel:`, `mailto:`, `wa.me/`
+- `errorHandler.ts`: status 503 (servei IA no configurat) ara mostra el missatge real en lloc de "Error intern"
+- `ai-generate.service.ts`: errors 401/403 del LLM → missatge clar "Clau API invàlida per a GROQ/..."
+- Creats `VERIFICACIO_FASE2.md` i `VERIFICACIO_FASE3.md` com a guies de proves manuals
+
+### Sessió 2026-04-24 (Fase 3 — Mòduls 7 + 25 + 8 + 38)
+
+**Mòdul 7 — Landing Pro IA (completat)**
+- `ai-generate.service.ts`: `getProvider` (llegeix AIProvider de BD, desencripta), `callLLM` (Groq/OpenAI/Anthropic/Ollama), `parseJSON`, `generateLandingContent`, `generateWhatsAppBotContent`
+- Fallback: si client no té proveïdor configurat, usa `GROQ_API_KEY` de les variables d'entorn
+- `POST /api/clients/:id/generate-landing` — genera títol, subtítol, descripció, CTA, highlights, estil, colors
+- `LandingEditor.tsx` ampliat: bloc "✨ Generar contingut amb IA" amb camp sector + idioma + botó Generar
+
+**Mòdul 25 — Agent Suport WhatsApp (completat)**
+- BD: model `WhatsAppBotConfig` + `faqs` Json → `prisma db push` ✅
+- `POST/GET/PUT /api/clients/:id/whatsapp-bot`, `POST .../generate`
+- `useWhatsAppBot.ts` hook: `useWhatsAppBot`, `useSaveWhatsAppBot`, `useGenerateWhatsAppBot`
+- `WhatsAppBotPanel.tsx`: toggle actiu, nom bot, salutació, to (professional/amable/informal), horari, editor FAQs (màx 20), generació IA per sector
+- Integrat al `ClientServiceManager` sota el slug `whatsapp-bot` (sota connexions OAuth + n8n)
+
+**Mòdul 8 — RAG / Alf (completat)**
+- BD: model `RAGDocument` + enum `RAGDocStatus` → `prisma db push` ✅
+- `backend/src/routes/rag.ts`: upload (multer 20MB, memoryStorage), GCS, async indexDocument, reindex, delete, query proxy
+- `indexDocument()` → FastAPI `POST /rag/index` (FormData), actualitza status DB
+- `reindexFromGCS()` → descarrega de GCS i re-indexa
+- Registrat: `app.use('/api/clients', ragRouter)` + `multer` + `@types/multer` instal·lats
+- `useRag.ts` hook: `useRagDocuments` (polling 5s), `useUploadRagDocument`, `useDeleteRagDocument`, `useReindexRagDocument`
+- `RAGPanel.tsx`: zona drag&drop per pujar, llista de documents amb status (PENDING/INDEXING/INDEXED/FAILED), chunks count, botó re-indexar i eliminar
+- Integrat al `ClientServiceManager` per slugs amb `rag` (mostra AIProvidersPanel + RAGPanel)
+
+**Mòdul 38 — Constructor Workflows IA (completat)**
+- Backend ja tenia: `POST /api/automations/templates`, `PATCH .../templateId`
+- `useCreateTemplate`, `useUpdateTemplate` afegits a `useAutomations.ts`
+- `/admin/automations/page.tsx` ampliat amb modal `TemplateModal`:
+  - Camps: nom, slug (auto-generat), descripció, categoria, toggle actiu
+  - Editor JSON workflow n8n (textarea + validació JSON en temps real)
+  - Botó reset JSON, instruccions exportació n8n
+  - Crear nou / editar existent
+- Columna "Accions" a la taula: botó ✎ EDITAR per cada template
+- Botó "Nou Template" al header de la pàgina
 
 ### Sessió 2026-04-24 (Fase 3 — Mòduls 14 + 9 + 24)
 

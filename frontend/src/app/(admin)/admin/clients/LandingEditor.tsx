@@ -204,8 +204,8 @@ const schema = z.object({
   ctaText:      z.string().optional(),
   ctaUrl:       z.string()
                   .optional()
-                  .refine(v => !v || v === '' || /^https?:\/\/.+/.test(v), {
-                    message: 'Introdueix una URL vàlida (ha de començar per https://)',
+                  .refine(v => !v || v === '' || /^(https?:\/\/.+|tel:.+|mailto:.+|wa\.me\/.+)/.test(v), {
+                    message: "URL vàlida: https://, tel:+34..., mailto:correu@, wa.me/34...",
                   }),
   primaryColor: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().or(z.literal('')),
   style:        z.enum(['dark-tech', 'minimal-light', 'gradient-hero', 'split-layout']).optional(),
@@ -225,6 +225,9 @@ export default function LandingEditor({ clientId, companyName }: Props) {
 
   const [saveError,      setSaveError]      = useState('')
   const [saveOk,         setSaveOk]         = useState(false)
+  const [aiLoading,      setAiLoading]      = useState(false)
+  const [aiSector,       setAiSector]       = useState('')
+  const [aiError,        setAiError]        = useState('')
   const [logoPreview,    setLogoPreview]     = useState<string>('')
   const [logoLoading,    setLogoLoading]     = useState(false)
   const [logoSuggestion, setLogoSuggestion] = useState<{
@@ -267,6 +270,32 @@ export default function LandingEditor({ clientId, companyName }: Props) {
   }, [landing, reset])
 
   const primaryColor   = watch('primaryColor') || '#FF6B00'
+
+  const handleGenerateAI = async () => {
+    if (!aiSector.trim()) { setAiError('Indica el sector del negoci'); return }
+    setAiLoading(true); setAiError('')
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+      const token  = document.cookie.match(/access_token=([^;]+)/)?.[1] ?? ''
+      const res    = await fetch(`${apiUrl}/api/clients/${clientId}/generate-landing`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        credentials: 'include',
+        body:    JSON.stringify({ companyName, sector: aiSector, lang: 'ca' }),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message)
+      const d = json.data
+      setValue('title',       d.title,       { shouldDirty: true })
+      setValue('subtitle',    d.subtitle,    { shouldDirty: true })
+      setValue('description', d.description, { shouldDirty: true })
+      setValue('ctaText',     d.ctaText,     { shouldDirty: true })
+    } catch (err: any) {
+      setAiError(err.message ?? 'Error generant contingut')
+    } finally {
+      setAiLoading(false)
+    }
+  }
   const selectedStyle  = watch('style')    || 'dark-tech'
   const selectedFont   = watch('fontPair') || 'orbitron-rajdhani'
 
@@ -452,7 +481,34 @@ export default function LandingEditor({ clientId, companyName }: Props) {
           )}
         </div>
 
-        {/* ── 2. Contingut ─────────────────────────────────── */}
+        {/* ── 2. Generar amb IA ────────────────────────────── */}
+        <div className="border border-orange-900/30 bg-[#0d0d1a] p-4 space-y-3">
+          <p className="font-mono text-[9px] tracking-[3px] text-orange-400 uppercase">✨ Generar contingut amb IA</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={aiSector}
+              onChange={e => { setAiSector(e.target.value); setAiError('') }}
+              placeholder="Sector del negoci (ex: forn de pa, taller mecànic...)"
+              className="form-input flex-1 text-sm"
+            />
+            <button
+              type="button"
+              onClick={handleGenerateAI}
+              disabled={aiLoading}
+              className="font-mono text-[9px] tracking-widest text-orange-400 border border-orange-500/40 px-4 py-2 hover:bg-orange-900/20 transition-colors whitespace-nowrap disabled:opacity-50"
+            >
+              {aiLoading ? 'GENERANT...' : '✨ GENERAR'}
+            </button>
+          </div>
+          {aiError && <p className="text-[10px] font-mono text-red-400">{aiError}</p>}
+          <p className="text-[10px] text-gray-600 font-mono">
+            Omple el sector i fes clic per generar títol, subtítol, descripció i CTA automàticament.
+            Requereix un proveïdor IA configurat.
+          </p>
+        </div>
+
+        {/* ── 3. Contingut ─────────────────────────────────── */}
         <div>
           <label className="form-label">Títol principal <span className="text-[var(--text-muted)]">(opcional si hi ha logo)</span></label>
           <input className="form-input" placeholder="Nom de l'empresa o eslògan" {...register('title')} />
@@ -479,7 +535,7 @@ export default function LandingEditor({ clientId, companyName }: Props) {
           </div>
           <div>
             <label className="form-label">URL del botó (opcional)</label>
-            <input className="form-input" placeholder="https://..." {...register('ctaUrl')} />
+            <input className="form-input" placeholder="https://... · tel:+34... · mailto:..." {...register('ctaUrl')} />
             {errors.ctaUrl && <p className="font-mono text-[10px] text-[#ff4444] mt-1">{errors.ctaUrl.message}</p>}
           </div>
         </div>
