@@ -1,5 +1,6 @@
 'use client'
 import { usePortalDashboard } from '../../../../hooks/usePortal'
+import { useTranslation } from '../../../../hooks/useTranslation'
 
 const PLAN_COLORS: Record<string, string> = {
   basic:       '#4ade80',
@@ -9,14 +10,14 @@ const PLAN_COLORS: Record<string, string> = {
   custom:      '#FF6B00',
 }
 
-function UsageBar({ used, max, label, color }: { used: number; max: number | null; label: string; color: string }) {
+function UsageBar({ used, max, label, color, unlimited }: { used: number; max: number | null; label: string; color: string; unlimited: string }) {
   const pct = max ? Math.min(100, Math.round((used / max) * 100)) : 0
   return (
     <div>
       <div className="flex justify-between items-baseline mb-1.5">
         <p className="font-mono text-[9px] tracking-[2px] text-[var(--text-muted)] uppercase">{label}</p>
         <p className="font-mono text-[10px]" style={{ color }}>
-          {used.toLocaleString('ca-ES')}{max ? ` / ${max.toLocaleString('ca-ES')}` : ' (il·limitat)'}
+          {used.toLocaleString('ca-ES')}{max ? ` / ${max.toLocaleString('ca-ES')}` : ` (${unlimited})`}
         </p>
       </div>
       {max && (
@@ -32,12 +33,13 @@ function UsageBar({ used, max, label, color }: { used: number; max: number | nul
 }
 
 export default function ClientDashboard() {
+  const { t } = useTranslation('client')
   const { data, isLoading } = usePortalDashboard()
 
   if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[300px]">
-        <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">Carregant...</p>
+        <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">{t('dashboard.loading')}</p>
       </div>
     )
   }
@@ -52,14 +54,14 @@ export default function ClientDashboard() {
 
       {/* ── Header ──────────────────────────────────────────── */}
       <div className="mb-8">
-        <p className="section-tag">MÒDUL 5</p>
+        <p className="section-tag">{t('dashboard.tag')}</p>
         <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">{client.companyName}</h1>
         {client.domain && (
           <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">{client.domain}</p>
         )}
         {client.isTest && (
           <span className="inline-flex mt-2 font-mono text-[8px] tracking-widest px-2 py-0.5 border border-[#60a5fa]/40 text-[#60a5fa] bg-[#60a5fa]/10">
-            CLIENT DE PROVA
+            {t('dashboard.test_badge')}
           </span>
         )}
       </div>
@@ -70,23 +72,23 @@ export default function ClientDashboard() {
           style={{ borderLeftColor: planColor }}>
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="font-mono text-[9px] tracking-[3px] uppercase mb-1" style={{ color: planColor }}>SUBSCRIPCIÓ ACTIVA</p>
+              <p className="font-mono text-[9px] tracking-[3px] uppercase mb-1" style={{ color: planColor }}>{t('dashboard.subscription_active_tag')}</p>
               <p className="font-orbitron font-bold text-xl" style={{ color: planColor }}>{sub.planName}</p>
             </div>
             <div className="text-right">
-              <p className="font-mono text-[11px] text-[var(--text-muted)]">quota mensual</p>
+              <p className="font-mono text-[11px] text-[var(--text-muted)]">{t('dashboard.monthly_price')}</p>
               <p className="font-orbitron text-2xl font-bold text-[var(--text)]">{Number(sub.priceMonthly).toFixed(2)}€</p>
             </div>
           </div>
           {sub.renewsAt && (
             <p className="font-mono text-[9px] text-[var(--text-muted)] tracking-wider">
-              Renova el {new Date(sub.renewsAt).toLocaleDateString('ca-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
+              {t('dashboard.renews_at', { date: new Date(sub.renewsAt).toLocaleDateString('ca-ES', { day: '2-digit', month: 'long', year: 'numeric' }) })}
             </p>
           )}
         </div>
       ) : (
         <div className="bg-[var(--bg-2)] border border-[var(--border)] p-6 mb-6 text-center">
-          <p className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest">SENSE SUBSCRIPCIÓ ACTIVA</p>
+          <p className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest">{t('dashboard.no_subscription_tag')}</p>
         </div>
       )}
 
@@ -95,7 +97,7 @@ export default function ClientDashboard() {
         {/* ── Serveis ─────────────────────────────────────────── */}
         {sub && sub.services.length > 0 && (
           <div className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
-            <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-4">Serveis inclosos</p>
+            <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-4">{t('dashboard.services_included')}</p>
             <div className="space-y-2">
               {sub.services.map(s => (
                 <div key={s.slug} className="flex items-center gap-2">
@@ -113,29 +115,32 @@ export default function ClientDashboard() {
         {/* ── Ús del mes ──────────────────────────────────────── */}
         <div className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">Ús del mes</p>
+            <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{t('dashboard.usage_month')}</p>
             <p className="font-mono text-[9px] text-[var(--text-muted)]">
               {new Date(usage.periodStart).toLocaleDateString('ca-ES', { month: 'long' }).toUpperCase()}
             </p>
           </div>
           <div className="space-y-4">
             <UsageBar
-              label="Converses"
+              label={t('dashboard.conversations')}
               used={usage.conversationsUsed}
               max={sub?.limits?.maxConversations ?? null}
               color={planColor}
+              unlimited={t('dashboard.unlimited')}
             />
             <UsageBar
-              label="Tokens IA"
+              label={t('dashboard.tokens')}
               used={usage.tokensUsed}
               max={sub?.limits?.maxTokens ?? null}
               color={planColor}
+              unlimited={t('dashboard.unlimited')}
             />
             <UsageBar
-              label="Automatitzacions"
+              label={t('dashboard.automations')}
               used={usage.automationsUsed}
               max={sub?.limits?.maxAutomations ?? null}
               color={planColor}
+              unlimited={t('dashboard.unlimited')}
             />
           </div>
         </div>

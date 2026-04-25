@@ -1,5 +1,5 @@
 # Progrés del Projecte
-Última actualització: 2026-04-24
+Última actualització: 2026-04-25
 
 ## Resum executiu
 - Fase actual: **3 — Diferenciació** ✅ COMPLETADA (Fase 2 completada)
@@ -31,6 +31,8 @@
 | 25 — Agent Suport WhatsApp | 2026-04-24 | `WhatsAppBotConfig` BD, endpoints GET/PUT/generate, `WhatsAppBotPanel.tsx` amb FAQs editor + generació IA, integrat a ClientServiceManager |
 | 8  — RAG / Alf         | 2026-04-24 | `RAGDocument` BD, upload multer 20MB, async indexDocument→FastAPI, drag&drop panel, polling 5s, re-index, status badges |
 | 38 — Constructor Workflows IA | 2026-04-24 | Modal crear/editar templates n8n amb JSON editor, validació, auto-slug, integrat a `/admin/automations` |
+| 10 — Multiidioma (complert) | 2026-04-25 | Totes les pàgines admin + client dashboard ara usen `useTranslation()`. Claus ca/es/en per invoices, services, settings, automations, client dashboard. **Abans:** només el menú es traduïa |
+| 41 — Agent Suport Telegram | 2026-04-25 | `TelegramBotConfig` BD, endpoints GET/PUT/generate, `TelegramBotPanel.tsx`, `useTelegramBot.ts`, 3 templates n8n Telegram, integrat a ClientServiceManager |
 
 ### 🔄 En progrés
 *(cap)*
@@ -70,6 +72,24 @@
 ---
 
 ## Sessions recents
+
+### Sessió 2026-04-25b (Traduccions completes + Bot Telegram)
+
+**Traduccions completes (Mòdul 10 — ara definitiu)**
+- 7 pàgines admin/client actualitzades per usar `useTranslation('admin'/'client')`
+- Pàgines: invoices, services, settings, automations, client/dashboard
+- Fitxers i18n: ca/es/en admin.json + ca/es/en client.json completament poblats
+- Fix bug: prop `t` renomenada a `tmpl` a `TemplateRow` (conflicte amb hook `useTranslation`)
+- Fix bug: `UsageBar` afegit `unlimited` al destructuring
+
+**Bot Telegram (Mòdul 41)**
+- BD: model `TelegramBotConfig` (`prisma db push` ✅)
+- Endpoints: `GET/PUT /api/clients/:id/telegram-bot`, `POST .../generate`
+- `useTelegramBot.ts`: 3 hooks per a query/mutació
+- `TelegramBotPanel.tsx`: panel de config complet (token bot, salutació, to, horari, FAQs, generació IA)
+- 3 templates n8n Telegram: notificació-cita, alerta-lead, informe-diari
+- Integrat a `ClientServiceManager` quan servei slug = `bot-telegram`
+- Docker backend reconstruït i desplegat
 
 ### Sessió 2026-04-25 (Verificació i QA completes — Fase 1+2+3)
 

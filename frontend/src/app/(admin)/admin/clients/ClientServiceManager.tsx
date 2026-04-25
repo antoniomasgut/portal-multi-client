@@ -7,6 +7,9 @@ import CredentialsPanel from './CredentialsPanel'
 import AutomationsPanel from './AutomationsPanel'
 import { DomainsPanel } from './DomainsPanel'
 import { AIProvidersPanel } from './AIProvidersPanel'
+import RAGPanel from './RAGPanel'
+import WhatsAppBotPanel from './WhatsAppBotPanel'
+import TelegramBotPanel from './TelegramBotPanel'
 
 // ── Tipus ──────────────────────────────────────────────────────────────────────
 
@@ -49,12 +52,19 @@ const TUTORIALS: Record<string, { step: string; desc: string }[]> = {
     { step: 'Variables del client', desc: 'Configura les variables CLIENT_ID i CLIENT_EMAIL als workflows de n8n.' },
     { step: 'Provar l\'automatització', desc: 'Executa una prova manual del workflow per verificar el funcionament.' },
   ],
+  telegram: [
+    { step: 'Crear el bot a @BotFather', desc: 'Obre Telegram, escriu a @BotFather i executa /newbot. Segueix les instruccions per obtenir el token.' },
+    { step: 'Afegir el token', desc: 'Enganxa el token del bot al camp "Token del Bot (BotFather)" del panell de configuració.' },
+    { step: 'Configurar n8n', desc: 'Afegeix la URL del webhook n8n i l\'API Key als camps de credencials per als workflows de Telegram.' },
+    { step: 'Provar el bot', desc: 'Obre el bot a Telegram, envia /start i verifica que respon correctament.' },
+  ],
 }
 
 function getTutorial(slug: string) {
   if (slug.startsWith('landing-')) return TUTORIALS.landing
   if (slug === 'whatsapp-bot')      return TUTORIALS.whatsapp
   if (slug === 'automatitzacions')  return TUTORIALS.automatitzacions
+  if (slug === 'bot-telegram')      return TUTORIALS.telegram
   return null
 }
 
@@ -91,6 +101,28 @@ function ServiceConfigPanel({ clientId, companyName, slug }: { clientId: string;
             <CredentialsPanel clientId={clientId} filterService="n8n" />
           </div>
         </div>
+        <div className="border-t border-[var(--border)] pt-4">
+          <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-3">Configuració del Bot</p>
+          <WhatsAppBotPanel clientId={clientId} companyName={companyName} />
+        </div>
+      </div>
+    )
+  }
+
+  if (slug === 'bot-telegram') {
+    return (
+      <div className="space-y-6">
+        <div>
+          <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-3">Connexió n8n (Webhook)</p>
+          <ConnectionsPanel clientId={clientId} filterProvider="n8n" />
+          <div className="mt-3">
+            <CredentialsPanel clientId={clientId} filterService="n8n" />
+          </div>
+        </div>
+        <div className="border-t border-[var(--border)] pt-4">
+          <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-3">Configuració del Bot Telegram</p>
+          <TelegramBotPanel clientId={clientId} companyName={companyName} />
+        </div>
       </div>
     )
   }
@@ -116,7 +148,22 @@ function ServiceConfigPanel({ clientId, companyName, slug }: { clientId: string;
     return <DomainsPanel clientId={clientId} />
   }
 
-  if (slug.includes('ia') || slug.includes('rag') || slug.includes('ai')) {
+  if (slug.includes('rag') || slug === 'documents-rag') {
+    return (
+      <div className="space-y-6">
+        <div>
+          <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-3">Proveïdors IA</p>
+          <AIProvidersPanel clientId={clientId} />
+        </div>
+        <div className="border-t border-[var(--border)] pt-4">
+          <p className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase mb-3">Documents RAG</p>
+          <RAGPanel clientId={clientId} />
+        </div>
+      </div>
+    )
+  }
+
+  if (slug.includes('ia') || slug.includes('ai') || slug.includes('proveidor')) {
     return <AIProvidersPanel clientId={clientId} />
   }
 

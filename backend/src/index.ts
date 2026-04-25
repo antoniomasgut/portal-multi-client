@@ -20,6 +20,10 @@ import reportingRouter   from './routes/reporting'
 import rgpdRouter        from './routes/rgpd'
 import domainsRouter     from './routes/domains'
 import aiProvidersRouter from './routes/ai-providers'
+import aiGenerateRouter   from './routes/ai-generate'
+import whatsappBotRouter  from './routes/whatsapp-bot'
+import telegramBotRouter  from './routes/telegram-bot'
+import ragRouter           from './routes/rag'
 import { errorHandler }  from './middleware/errorHandler'
 
 const app  = express()
@@ -74,6 +78,10 @@ app.use('/api/clients',      domainsRouter)
 app.use('/api',              domainsRouter)
 app.use('/api/clients',      aiProvidersRouter)
 app.use('/api',              aiProvidersRouter)
+app.use('/api/clients',      aiGenerateRouter)
+app.use('/api/clients',      whatsappBotRouter)
+app.use('/api/clients',      telegramBotRouter)
+app.use('/api/clients',      ragRouter)
 
 // ── Middleware d'errors centralitzat ────────────────────────────────
 app.use(errorHandler)

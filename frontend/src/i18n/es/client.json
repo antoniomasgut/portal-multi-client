@@ -1,16 +1,25 @@
 {
   "dashboard": {
     "title": "Mi Portal",
+    "tag": "MÓDULO 5",
     "subscription": "Suscripción Activa",
+    "subscription_active_tag": "SUSCRIPCIÓN ACTIVA",
     "plan": "Plan",
     "next_billing": "Próximo cobro",
     "monthly_price": "Cuota mensual",
+    "renews_at": "Renueva el {{date}}",
     "services": "Mis Servicios",
+    "services_included": "Servicios incluidos",
     "usage": "Uso del plan",
+    "usage_month": "Uso del mes",
     "conversations": "Conversaciones",
-    "tokens": "Tokens",
+    "tokens": "Tokens IA",
     "automations": "Automatizaciones",
-    "no_subscription": "Sin suscripción activa"
+    "no_subscription": "Sin suscripción activa",
+    "no_subscription_tag": "SIN SUSCRIPCIÓN ACTIVA",
+    "test_badge": "CLIENTE DE PRUEBA",
+    "unlimited": "ilimitado",
+    "loading": "Cargando..."
   },
   "invoices": {
     "title": "Mis Facturas",

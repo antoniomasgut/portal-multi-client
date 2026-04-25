@@ -1,16 +1,17 @@
 'use client'
 import { useState } from 'react'
 import { useDiscountPolicies, useToggleDiscountPolicy, useUpdateDiscountPolicy, usePricingPolicy, useUpdatePricingPolicy } from '../../../../hooks/useSettings'
-
-const DISCOUNT_LABELS: Record<string, string> = {
-  NEW_CLIENT:        'Nou client',
-  ANNUAL_PAYMENT:    'Pagament anual',
-  REFERRAL_REFERRER: 'Referidor',
-  REFERRAL_NEW:      'Client referit',
-  MANUAL:            'Descompte manual',
-}
+import { useTranslation } from '../../../../hooks/useTranslation'
 
 export default function SettingsPage() {
+  const { t } = useTranslation('admin')
+  const DISCOUNT_LABELS: Record<string, string> = {
+    NEW_CLIENT:        t('settings.discount_new_client'),
+    ANNUAL_PAYMENT:    t('settings.discount_annual_payment'),
+    REFERRAL_REFERRER: t('settings.discount_referral_referrer'),
+    REFERRAL_NEW:      t('settings.discount_referral_new'),
+    MANUAL:            t('settings.discount_manual'),
+  }
   const { data: discountPolicies = [], isLoading: loadingDisc } = useDiscountPolicies()
   const { data: pricingPolicy,          isLoading: loadingPrice } = usePricingPolicy()
   const toggleDiscount  = useToggleDiscountPolicy()
@@ -44,10 +45,10 @@ export default function SettingsPage() {
 
       {/* Header */}
       <div className="mb-8">
-        <p className="section-tag">MÒDUL 2</p>
-        <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">Configuració</h1>
+        <p className="section-tag">{t('settings.tag')}</p>
+        <h1 className="font-orbitron font-black text-3xl text-[#FF6B00]">{t('settings.title')}</h1>
         <p className="font-mono text-[11px] text-[var(--text-muted)] mt-1 tracking-widest">
-          Polítiques de descompte i preus
+          {t('settings.subtitle')}
         </p>
       </div>
 
@@ -55,17 +56,17 @@ export default function SettingsPage() {
       <section className="mb-8">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-1 h-5 bg-[#4ade80]" />
-          <p className="font-mono text-[10px] tracking-[4px] text-[#4ade80] uppercase">Polítiques de descompte</p>
+          <p className="font-mono text-[10px] tracking-[4px] text-[#4ade80] uppercase">{t('settings.discount_policies')}</p>
         </div>
 
         {loadingDisc ? (
           <div className="bg-[var(--bg-2)] border border-[var(--border)] p-8 text-center">
-            <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse">CARREGANT...</p>
+            <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse">{t('settings.loading')}</p>
           </div>
         ) : (
           <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
             <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
-              {['POLÍTICA', 'DESCOMPTE', 'DURADA', 'ESTAT', 'ACCIONS'].map(h => (
+              {[t('settings.col_policy'), t('settings.col_discount'), t('settings.col_duration'), t('settings.col_status'), t('settings.col_actions')].map(h => (
                 <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
               ))}
             </div>
@@ -141,7 +142,7 @@ export default function SettingsPage() {
                       ? 'text-[#4ade80] border-[#4ade80]/40 bg-[#4ade80]/10'
                       : 'text-[var(--text-muted)] border-[var(--border)]'
                   }`}>
-                    {p.isActive ? 'ACTIU' : 'INACTIU'}
+                    {p.isActive ? t('settings.status_active') : t('settings.status_inactive')}
                   </span>
                 </div>
 
@@ -154,7 +155,7 @@ export default function SettingsPage() {
                         onClick={() => saveDiscount(p.id)}
                         disabled={updateDiscount.isPending}
                       >
-                        {updateDiscount.isPending ? '...' : 'DESAR'}
+                        {updateDiscount.isPending ? '...' : t('settings.btn_save')}
                       </button>
                       <button
                         className="btn-outline text-[9px] px-3 py-1.5"
@@ -169,7 +170,7 @@ export default function SettingsPage() {
                         className="btn-outline text-[9px] px-3 py-1.5"
                         onClick={() => startEditDiscount(p)}
                       >
-                        EDITAR
+                        {t('settings.btn_edit')}
                       </button>
                       <button
                         className={`font-mono text-[9px] tracking-widest px-2 transition-colors ${
@@ -180,7 +181,7 @@ export default function SettingsPage() {
                         onClick={() => toggleDiscount.mutate(p.id)}
                         disabled={toggleDiscount.isPending}
                       >
-                        {p.isActive ? 'DESACTIVAR' : 'ACTIVAR'}
+                        {p.isActive ? t('settings.btn_deactivate') : t('settings.btn_activate')}
                       </button>
                     </>
                   )}
@@ -195,19 +196,19 @@ export default function SettingsPage() {
       <section>
         <div className="flex items-center gap-3 mb-4">
           <div className="w-1 h-5 bg-[#60a5fa]" />
-          <p className="font-mono text-[10px] tracking-[4px] text-[#60a5fa] uppercase">Política de canvis de preu</p>
+          <p className="font-mono text-[10px] tracking-[4px] text-[#60a5fa] uppercase">{t('settings.pricing_policy_section')}</p>
         </div>
 
         {loadingPrice ? (
           <div className="bg-[var(--bg-2)] border border-[var(--border)] p-8 text-center">
-            <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse">CARREGANT...</p>
+            <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse">{t('settings.loading')}</p>
           </div>
         ) : pricingPolicy ? (
           <div className="bg-[var(--bg-2)] border border-[var(--border)] p-6">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               {/* Dies avís mínim */}
               <div>
-                <label className="form-label">Dies d'avís mínim</label>
+                <label className="form-label">{t('settings.label_min_notice')}</label>
                 <div className="relative">
                   <input
                     className="form-input pr-10"
@@ -215,16 +216,16 @@ export default function SettingsPage() {
                     defaultValue={pricingPolicy.minNoticeDays}
                     onBlur={e => updatePricing.mutate({ minNoticeDays: Number(e.target.value) })}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[var(--text-muted)]">dies</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 font-mono text-[10px] text-[var(--text-muted)]">{t('settings.label_min_notice_days')}</span>
                 </div>
                 <p className="font-mono text-[9px] text-[var(--text-muted)] mt-1">
-                  Temps mínim d'avís als clients abans d'un canvi de preu
+                  {t('settings.label_min_notice_help')}
                 </p>
               </div>
 
               {/* Permetre canvi immediat */}
               <div>
-                <label className="form-label">Canvi immediat</label>
+                <label className="form-label">{t('settings.label_immediate_change')}</label>
                 <button
                   className={`w-full px-4 py-3 border font-mono text-[10px] tracking-widest transition-colors ${
                     pricingPolicy.allowImmediateChange
@@ -234,16 +235,16 @@ export default function SettingsPage() {
                   onClick={() => updatePricing.mutate({ allowImmediateChange: !pricingPolicy.allowImmediateChange })}
                   disabled={updatePricing.isPending}
                 >
-                  {pricingPolicy.allowImmediateChange ? 'PERMÈS' : 'NO PERMÈS'}
+                  {pricingPolicy.allowImmediateChange ? t('settings.allowed') : t('settings.not_allowed')}
                 </button>
                 <p className="font-mono text-[9px] text-[var(--text-muted)] mt-1">
-                  Permet canviar preus sense avís previ
+                  {t('settings.label_immediate_change_help')}
                 </p>
               </div>
 
               {/* Notificar clients */}
               <div>
-                <label className="form-label">Notificar clients</label>
+                <label className="form-label">{t('settings.label_notify_clients')}</label>
                 <button
                   className={`w-full px-4 py-3 border font-mono text-[10px] tracking-widest transition-colors ${
                     pricingPolicy.notifyClientsOnChange
@@ -253,10 +254,10 @@ export default function SettingsPage() {
                   onClick={() => updatePricing.mutate({ notifyClientsOnChange: !pricingPolicy.notifyClientsOnChange })}
                   disabled={updatePricing.isPending}
                 >
-                  {pricingPolicy.notifyClientsOnChange ? 'ACTIVAT' : 'DESACTIVAT'}
+                  {pricingPolicy.notifyClientsOnChange ? t('settings.enabled') : t('settings.disabled')}
                 </button>
                 <p className="font-mono text-[9px] text-[var(--text-muted)] mt-1">
-                  Enviar email als clients quan canvia el seu preu
+                  {t('settings.label_notify_clients_help')}
                 </p>
               </div>
             </div>

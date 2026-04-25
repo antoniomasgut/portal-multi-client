@@ -182,6 +182,9 @@ model Client {
   dataExports   DataExportRequest[]
   domains       ClientDomain[]
   aiProviders   AIProvider[]
+  whatsappBot   WhatsAppBotConfig?
+  telegramBot   TelegramBotConfig?
+  ragDocuments  RAGDocument[]
 
   @@index([contactEmail])
   @@index([domain])
@@ -493,6 +496,68 @@ model AutomationExecution {
   @@map("automation_executions")
 }
 
+// ── RAG / Documents ───────────────────────────────────────────────────
+
+model RAGDocument {
+  id          String        @id @default(uuid())
+  clientId    String
+  filename    String
+  gcsPath     String
+  mimeType    String        @default("application/pdf")
+  sizeBytes   Int           @default(0)
+  status      RAGDocStatus  @default(PENDING)
+  chunkCount  Int           @default(0)
+  error       String?
+  indexedAt   DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@index([status])
+  @@map("rag_documents")
+}
+
+// ── Bot WhatsApp ──────────────────────────────────────────────────────
+
+model WhatsAppBotConfig {
+  id            String   @id @default(uuid())
+  clientId      String   @unique
+  botName       String   @default("AssistentAMG")
+  greeting      String   @db.Text
+  tone          String   @default("amable")
+  businessHours String?
+  faqs          Json     @default("[]")
+  isActive      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@map("whatsapp_bot_configs")
+}
+
+// ── Bot Telegram ──────────────────────────────────────────────────────
+
+model TelegramBotConfig {
+  id               String   @id @default(uuid())
+  clientId         String   @unique
+  botName          String   @default("AssistentAMG")
+  telegramBotToken String?
+  greeting         String   @db.Text
+  tone             String   @default("amable")
+  businessHours    String?
+  faqs             Json     @default("[]")
+  isActive         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  client Client @relation(fields: [clientId], references: [id])
+
+  @@map("telegram_bot_configs")
+}
+
 // ── Proveïdors IA per client ──────────────────────────────────────────
 
 model AIProvider {
@@ -659,6 +724,13 @@ enum NotificationEvent {
 enum NotificationStatus {
   PENDING
   SENT
+  FAILED
+}
+
+enum RAGDocStatus {
+  PENDING
+  INDEXING
+  INDEXED
   FAILED
 }
 

@@ -15,6 +15,12 @@ interface WhatsAppBotContent {
   faqs:        { q: string; a: string }[]
 }
 
+interface TelegramBotContent {
+  greeting:    string
+  tone:        string
+  faqs:        { q: string; a: string }[]
+}
+
 // ── Recupera el primer proveïdor actiu del client ──────────────────────────
 
 async function getProvider(clientId: string) {
@@ -162,6 +168,42 @@ Respon amb:
 
   return {
     greeting: content.greeting?.slice(0, 200) ?? `Hola! Sóc el bot de ${companyName}. En què et puc ajudar?`,
+    tone:     ['professional', 'amable', 'informal'].includes(content.tone) ? content.tone : 'amable',
+    faqs:     Array.isArray(content.faqs) ? content.faqs.slice(0, 10) : [],
+  }
+}
+
+// ── Generar config bot Telegram ────────────────────────────────────────────
+
+export async function generateTelegramBotContent(
+  clientId:    string,
+  companyName: string,
+  sector:      string,
+  lang:        string
+): Promise<TelegramBotContent> {
+  const prov      = await getProvider(clientId)
+  const langMap   = { ca: 'català', es: 'español', en: 'English' }
+  const langLabel = langMap[lang as keyof typeof langMap] ?? 'català'
+
+  const system = `Ets un expert en atenció al client via Telegram per a pimes. Respon en ${langLabel} i en JSON vàlid.`
+  const user   = `Genera la configuració inicial per al bot de Telegram de "${companyName}" (sector: ${sector}).
+
+Respon amb:
+{
+  "greeting": "missatge de benvinguda breu i amable per a Telegram (màx 200 caràcters)",
+  "tone": "professional|amable|informal",
+  "faqs": [
+    {"q": "pregunta freqüent 1", "a": "resposta breu"},
+    {"q": "pregunta freqüent 2", "a": "resposta breu"},
+    {"q": "pregunta freqüent 3", "a": "resposta breu"}
+  ]
+}`
+
+  const raw     = await callLLM(prov, system, user)
+  const content = parseJSON<TelegramBotContent>(raw)
+
+  return {
+    greeting: content.greeting?.slice(0, 200) ?? `Hola! Sóc el bot de Telegram de ${companyName}. En què et puc ajudar?`,
     tone:     ['professional', 'amable', 'informal'].includes(content.tone) ? content.tone : 'amable',
     faqs:     Array.isArray(content.faqs) ? content.faqs.slice(0, 10) : [],
   }

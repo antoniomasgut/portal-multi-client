@@ -345,6 +345,57 @@ async function main() {
         settings: { executionOrder: 'v1' },
       },
     },
+    {
+      slug: 'telegram-notificacio-cita', name: 'Notificació de cita (Telegram)', category: 'booking',
+      description: 'Reserva confirmada → missatge Telegram automàtic al client amb els detalls de la cita.',
+      workflowJson: {
+        name: 'AMG — Notificació cita Telegram ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Reserva confirmada', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'telegram-cita-{{CLIENT_ID}}', httpMethod: 'POST', responseMode: 'responseNode' } },
+          { id: 'telegram', name: 'Enviar notificació Telegram', type: 'n8n-nodes-base.telegram', typeVersion: 1, position: [450, 300],
+            parameters: { operation: 'sendMessage', chatId: '={{$json["chatId"]}}', text: 'La teva cita ha estat confirmada. Fins aviat!' } },
+        ],
+        connections: { 'Reserva confirmada': { main: [[{ node: 'Enviar notificació Telegram', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'telegram-alerta-lead', name: 'Alerta de lead (Telegram)', category: 'sales',
+      description: 'Nou lead del formulari web → alerta Telegram immediata al propietari del negoci.',
+      workflowJson: {
+        name: 'AMG — Alerta lead Telegram ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'webhook', name: 'Nou lead web', type: 'n8n-nodes-base.webhook', typeVersion: 1, position: [250, 300],
+            parameters: { path: 'telegram-lead-{{CLIENT_ID}}', httpMethod: 'POST' } },
+          { id: 'telegram', name: 'Alerta Telegram propietari', type: 'n8n-nodes-base.telegram', typeVersion: 1, position: [450, 300],
+            parameters: { operation: 'sendMessage', chatId: '={{$env["TELEGRAM_OWNER_CHAT_ID"]}}', text: 'Nou lead rebut: ={{$json["name"]}} (={{$json["email"]}})' } },
+        ],
+        connections: { 'Nou lead web': { main: [[{ node: 'Alerta Telegram propietari', type: 'main', index: 0 }]] } },
+        settings: { executionOrder: 'v1' },
+      },
+    },
+    {
+      slug: 'telegram-informe-diari', name: 'Informe diari (Telegram)', category: 'comunicacio',
+      description: 'Cada matí envia un resum diari de les activitats i estadístiques del dia anterior via Telegram.',
+      workflowJson: {
+        name: 'AMG — Informe diari Telegram ({{CLIENT_NAME}})',
+        nodes: [
+          { id: 'cron', name: 'Trigger diari 8h', type: 'n8n-nodes-base.scheduleTrigger', typeVersion: 1, position: [250, 300],
+            parameters: { rule: { interval: [{ field: 'cronExpression', expression: '0 8 * * *' }] } } },
+          { id: 'api', name: 'Obtenir estadístiques', type: 'n8n-nodes-base.httpRequest', typeVersion: 4, position: [450, 300],
+            parameters: { url: '{{PORTAL_API_URL}}/api/reports/daily/{{CLIENT_ID}}', method: 'GET',
+              headers: { parameters: [{ name: 'Authorization', value: 'Bearer {{WEBHOOK_SECRET}}' }] } } },
+          { id: 'telegram', name: 'Enviar informe Telegram', type: 'n8n-nodes-base.telegram', typeVersion: 1, position: [650, 300],
+            parameters: { operation: 'sendMessage', chatId: '={{$env["TELEGRAM_OWNER_CHAT_ID"]}}', text: 'Resum del dia: ={{$json["summary"]}}' } },
+        ],
+        connections: {
+          'Trigger diari 8h': { main: [[{ node: 'Obtenir estadístiques', type: 'main', index: 0 }]] },
+          'Obtenir estadístiques': { main: [[{ node: 'Enviar informe Telegram', type: 'main', index: 0 }]] },
+        },
+        settings: { executionOrder: 'v1' },
+      },
+    },
   ]
 
   for (const tmpl of AUTOMATION_TEMPLATES) {

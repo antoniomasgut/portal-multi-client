@@ -1,16 +1,25 @@
 {
   "dashboard": {
     "title": "El meu Portal",
+    "tag": "MÒDUL 5",
     "subscription": "Subscripció Activa",
+    "subscription_active_tag": "SUBSCRIPCIÓ ACTIVA",
     "plan": "Pla",
     "next_billing": "Proper cobrament",
     "monthly_price": "Quota mensual",
+    "renews_at": "Renova el {{date}}",
     "services": "Els meus Serveis",
+    "services_included": "Serveis inclosos",
     "usage": "Ús del pla",
+    "usage_month": "Ús del mes",
     "conversations": "Converses",
-    "tokens": "Tokens",
+    "tokens": "Tokens IA",
     "automations": "Automatitzacions",
-    "no_subscription": "Sense subscripció activa"
+    "no_subscription": "Sense subscripció activa",
+    "no_subscription_tag": "SENSE SUBSCRIPCIÓ ACTIVA",
+    "test_badge": "CLIENT DE PROVA",
+    "unlimited": "il·limitat",
+    "loading": "Carregant..."
   },
   "invoices": {
     "title": "Les meves Factures",
