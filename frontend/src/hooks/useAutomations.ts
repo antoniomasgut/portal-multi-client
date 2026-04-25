@@ -81,6 +81,39 @@ export function useTestTemplate() {
   })
 }
 
+export interface TemplateInput {
+  name:        string
+  slug:        string
+  description?: string
+  category:    string
+  workflowJson?: Record<string, unknown>
+  isActive?:   boolean
+}
+
+export function useCreateTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (body: TemplateInput) =>
+      api.post('/api/automations/templates', body).then(r => r.data.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['automation-templates-usage'] })
+      qc.invalidateQueries({ queryKey: ['automation-templates'] })
+    },
+  })
+}
+
+export function useUpdateTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, ...body }: TemplateInput & { id: string }) =>
+      api.patch(`/api/automations/templates/${id}`, body).then(r => r.data.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['automation-templates-usage'] })
+      qc.invalidateQueries({ queryKey: ['automation-templates'] })
+    },
+  })
+}
+
 // ── Automatitzacions d'un client ───────────────────────────────────────
 
 export function useClientAutomations(clientId: string) {

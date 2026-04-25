@@ -63,5 +63,8 @@
     "admin_title": "PORTAL ADMIN",
     "client_title": "PORTAL CLIENTE",
     "brand": "AMG"
+  },
+  "impersonate": {
+    "banner": "Estás accediendo como {{email}}"
   }
 }
