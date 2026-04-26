@@ -3,11 +3,11 @@ import { useState } from 'react'
 import {
   useClientAutomations,
   useAutomationTemplates,
-  useCreateAutomation,
   useToggleAutomation,
   useDeleteAutomation,
   type ClientAutomation,
 } from '../../../../hooks/useAutomations'
+import AutomationWizard from './AutomationWizard'
 
 const STATUS_STYLE: Record<string, string> = {
   ACTIVE:   'text-[#4ade80] border-[#4ade80]/40 bg-[#4ade80]/10',
@@ -143,9 +143,7 @@ function AutomationRow({ auto, clientId }: { auto: ClientAutomation; clientId: s
 export default function AutomationsPanel({ clientId }: { clientId: string }) {
   const { data: automations, isLoading } = useClientAutomations(clientId)
   const { data: templates }              = useAutomationTemplates()
-  const create                           = useCreateAutomation(clientId)
-  const [selectedTemplate, setSelectedTemplate] = useState('')
-  const [showAdd, setShowAdd]            = useState(false)
+  const [showWizard, setShowWizard]      = useState(false)
 
   if (isLoading) {
     return <p className="font-mono text-[10px] text-[var(--text-muted)]">Carregant automatitzacions...</p>
@@ -161,51 +159,21 @@ export default function AutomationsPanel({ clientId }: { clientId: string }) {
         </p>
         <button
           type="button"
-          onClick={() => setShowAdd(v => !v)}
+          onClick={() => setShowWizard(true)}
           className="font-mono text-[9px] tracking-widest px-3 py-1.5 border border-[#FF6B00]/40 text-[#FF6B00] hover:bg-[#FF6B00]/10 transition-colors"
         >
-          {showAdd ? '✕ CANCEL·LAR' : '+ AFEGIR'}
+          + AFEGIR
         </button>
       </div>
 
-      {/* Formulari afegir */}
-      {showAdd && templates && (
-        <div className="border border-[var(--border)] bg-[var(--bg-2)] p-4 space-y-3">
-          <p className="font-mono text-[9px] tracking-[3px] text-[var(--text-muted)] uppercase">Nou workflow</p>
-          <select
-            value={selectedTemplate}
-            onChange={e => setSelectedTemplate(e.target.value)}
-            className="form-input w-full text-sm"
-          >
-            <option value="">Selecciona un template...</option>
-            {templates.map(t => (
-              <option key={t.id} value={t.id}>
-                {t.name} · {CATEGORY_LABELS[t.category] ?? t.category}
-              </option>
-            ))}
-          </select>
-          {selectedTemplate && templates && (
-            <p className="font-mono text-[9px] text-[var(--text-muted)]">
-              {templates.find(t => t.id === selectedTemplate)?.description}
-            </p>
-          )}
-          <button
-            type="button"
-            disabled={!selectedTemplate || create.isPending}
-            onClick={async () => {
-              if (!selectedTemplate) return
-              await create.mutateAsync(selectedTemplate)
-              setSelectedTemplate('')
-              setShowAdd(false)
-            }}
-            className="btn-primary text-[10px]"
-          >
-            {create.isPending ? 'CREANT...' : 'CREAR WORKFLOW'}
-          </button>
-          {create.isError && (
-            <p className="font-mono text-[9px] text-[#ff4444]">Error en crear el workflow. Comprova que n8n estigui actiu.</p>
-          )}
-        </div>
+      {/* Wizard d'automatitzacions */}
+      {showWizard && templates && (
+        <AutomationWizard
+          clientId={clientId}
+          templates={templates}
+          onClose={() => setShowWizard(false)}
+          onCreated={() => setShowWizard(false)}
+        />
       )}
 
       {/* Llista d'automatitzacions */}

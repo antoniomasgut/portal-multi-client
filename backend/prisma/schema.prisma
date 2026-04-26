@@ -445,8 +445,9 @@ model AutomationTemplate {
   slug         String   @unique
   description  String?
   category     String   @default("general")
-  workflowJson Json
-  isActive     Boolean  @default(true)
+  workflowJson   Json
+  requiredParams Json     @default("[]")
+  isActive       Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

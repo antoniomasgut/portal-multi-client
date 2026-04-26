@@ -36,9 +36,10 @@ export async function listByClient(clientId: string) {
 }
 
 export async function createAutomation(
-  clientId:   string,
-  templateId: string,
-  adminUserId: string
+  clientId:    string,
+  templateId:  string,
+  adminUserId: string,
+  userParams:  Record<string, string> = {}
 ) {
   const [client, template] = await Promise.all([
     prisma.client.findFirst({ where: { id: clientId, deletedAt: null } }),
@@ -60,6 +61,11 @@ export async function createAutomation(
   // Intentar crear a n8n si disponible
   if (n8n.isN8nAvailable()) {
     try {
+      const telegramBot = await prisma.telegramBotConfig.findUnique({
+        where:  { clientId },
+        select: { telegramBotToken: true, botName: true },
+      })
+
       const vars: Record<string, string> = {
         CLIENT_ID:      client.id,
         CLIENT_EMAIL:   client.contactEmail,
@@ -69,6 +75,11 @@ export async function createAutomation(
         N8N_BASE_URL:   process.env.N8N_API_URL?.replace('/api/v1', '') ?? '',
         PORTAL_API_URL: process.env.BASE_URL ?? '',
         AUTOMATION_ID:  automation.id,
+        // Auto-resolved:
+        TELEGRAM_TOKEN: telegramBot?.telegramBotToken ?? '',
+        BOT_NAME:       telegramBot?.botName ?? '',
+        // User-provided:
+        ...userParams,
       }
       const n8nId = await n8n.createWorkflow(template.workflowJson as object, vars)
       await prisma.clientAutomation.update({

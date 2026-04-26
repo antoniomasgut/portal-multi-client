@@ -2,7 +2,10 @@ import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
 import * as automationService from '../services/automation.service'
 
-const createSchema = z.object({ templateId: z.string().uuid() })
+const createSchema = z.object({
+  templateId: z.string().uuid(),
+  params:     z.record(z.string()).default({}),
+})
 const toggleSchema = z.object({ active: z.boolean() })
 const createTemplateSchema = z.object({
   name:         z.string().min(1).max(120),
@@ -91,8 +94,8 @@ export const listClientAutomations = async (req: Request, res: Response, next: N
 
 export const createClientAutomation = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { templateId } = createSchema.parse(req.body)
-    const data = await automationService.createAutomation(req.params.id, templateId, req.user!.userId)
+    const { templateId, params = {} } = createSchema.parse(req.body)
+    const data = await automationService.createAutomation(req.params.id, templateId, req.user!.userId, params)
     res.status(201).json({ success: true, message: 'Automatització creada', data })
   } catch (err) { next(err) }
 }

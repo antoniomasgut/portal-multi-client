@@ -2,13 +2,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../utils/api'
 
+export interface RequiredParam {
+  key:      string
+  type:     'text' | 'email' | 'number' | 'password' | 'telegram_bot'
+  label:    string
+  required: boolean
+  help?:    string
+  default?: string
+}
+
 export interface AutomationTemplate {
-  id:          string
-  name:        string
-  slug:        string
-  description: string | null
-  category:    string
-  isActive:    boolean
+  id:             string
+  name:           string
+  slug:           string
+  description:    string | null
+  category:       string
+  isActive:       boolean
+  requiredParams: RequiredParam[]
 }
 
 export interface AutomationExecution {
@@ -132,8 +142,8 @@ export function useClientAutomations(clientId: string) {
 export function useCreateAutomation(clientId: string) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: (templateId: string) =>
-      api.post(`/api/clients/${clientId}/automations`, { templateId }).then(r => r.data.data),
+    mutationFn: ({ templateId, params = {} }: { templateId: string; params?: Record<string, string> }) =>
+      api.post(`/api/clients/${clientId}/automations`, { templateId, params }).then(r => r.data.data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['client-automations', clientId] })
     },

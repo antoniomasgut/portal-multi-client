@@ -194,6 +194,9 @@ async function main() {
     {
       slug: 'reserva-cita', name: 'Reserva de cita', category: 'booking',
       description: 'WhatsApp → Google Calendar. El bot recull les dades i crea la cita automàticament.',
+      requiredParams: [
+        { key: 'GOOGLE_CALENDAR_ID', type: 'text', label: 'ID del Google Calendar', required: true, help: "Calendar → Configuració → Integrar → copia l'ID (acaba en @group.calendar.google.com)" },
+      ],
       workflowJson: {
         name: 'AMG — Reserva de cita ({{CLIENT_NAME}})',
         nodes: [
@@ -212,6 +215,9 @@ async function main() {
     {
       slug: 'pressupost-auto', name: 'Pressupost automàtic', category: 'sales',
       description: 'Formulari web → genera PDF de pressupost → envia per email.',
+      requiredParams: [
+        { key: 'SMTP_TO', type: 'email', label: 'Email del destinatari', required: true },
+      ],
       workflowJson: {
         name: 'AMG — Pressupost automàtic ({{CLIENT_NAME}})',
         nodes: [
@@ -227,6 +233,9 @@ async function main() {
     {
       slug: 'recordatori-cita', name: 'Recordatori de cita', category: 'booking',
       description: 'Envia WhatsApp de recordatori 24h abans de cada cita al Google Calendar.',
+      requiredParams: [
+        { key: 'GOOGLE_CALENDAR_ID', type: 'text', label: 'ID del Google Calendar', required: true, help: 'El mateix Calendar que reserva-cita' },
+      ],
       workflowJson: {
         name: 'AMG — Recordatori de cita ({{CLIENT_NAME}})',
         nodes: [
@@ -242,6 +251,9 @@ async function main() {
     {
       slug: 'recollida-ressenyes', name: 'Recollida de ressenyes', category: 'marketing',
       description: 'Post-servei → WhatsApp automàtic demanant valoració → guarda a Google Sheets.',
+      requiredParams: [
+        { key: 'GOOGLE_SHEETS_ID', type: 'text', label: 'ID del Google Sheets', required: true, help: 'URL del full: docs.google.com/spreadsheets/d/{ID}/edit' },
+      ],
       workflowJson: {
         name: 'AMG — Recollida de ressenyes ({{CLIENT_NAME}})',
         nodes: [
@@ -257,6 +269,9 @@ async function main() {
     {
       slug: 'resposta-leads-web', name: 'Resposta leads web', category: 'sales',
       description: 'Formulari web → WhatsApp immediatament al lead + notificació al propietari.',
+      requiredParams: [
+        { key: 'OWNER_EMAIL', type: 'email', label: 'Email del propietari del negoci', required: true },
+      ],
       workflowJson: {
         name: 'AMG — Resposta leads web ({{CLIENT_NAME}})',
         nodes: [
@@ -272,6 +287,7 @@ async function main() {
     {
       slug: 'factura-servei', name: 'Factura de servei', category: 'billing',
       description: 'Servei completat → genera factura PDF → envia per email al client.',
+      requiredParams: [],
       workflowJson: {
         name: 'AMG — Factura de servei ({{CLIENT_NAME}})',
         nodes: [
@@ -288,6 +304,7 @@ async function main() {
     {
       slug: 'missatge-benvinguda', name: 'Missatge de benvinguda', category: 'onboarding',
       description: 'Primer contacte via WhatsApp → missatge de benvinguda personalitzat.',
+      requiredParams: [],
       workflowJson: {
         name: 'AMG — Benvinguda ({{CLIENT_NAME}})',
         nodes: [
@@ -303,6 +320,9 @@ async function main() {
     {
       slug: 'recuperacio-client', name: 'Recuperació client inactiu', category: 'retention',
       description: 'Clients sense contacte 30 dies → WhatsApp de reactivació automàtic.',
+      requiredParams: [
+        { key: 'GOOGLE_SHEETS_ID', type: 'text', label: 'ID del full de clients', required: true, help: 'URL del full: docs.google.com/spreadsheets/d/{ID}/edit' },
+      ],
       workflowJson: {
         name: 'AMG — Recuperació clients ({{CLIENT_NAME}})',
         nodes: [
@@ -318,6 +338,9 @@ async function main() {
     {
       slug: 'confirmacio-comanda', name: 'Confirmació de comanda', category: 'ecommerce',
       description: 'Nova comanda → WhatsApp de confirmació → actualitza stock a Google Sheets.',
+      requiredParams: [
+        { key: 'GOOGLE_SHEETS_ID', type: 'text', label: "ID del full d'estoc", required: true, help: 'URL del full: docs.google.com/spreadsheets/d/{ID}/edit' },
+      ],
       workflowJson: {
         name: 'AMG — Confirmació comanda ({{CLIENT_NAME}})',
         nodes: [
@@ -333,6 +356,10 @@ async function main() {
     {
       slug: 'alerta-estoc', name: "Alerta d'estoc baix", category: 'ecommerce',
       description: 'Stock < mínim → WhatsApp alert al propietari + email automàtic de recomanda.',
+      requiredParams: [
+        { key: 'GOOGLE_SHEETS_ID', type: 'text', label: "ID del full d'inventari", required: true, help: 'URL del full: docs.google.com/spreadsheets/d/{ID}/edit' },
+        { key: 'STOCK_MIN', type: 'number', label: "Estoc mínim per activar alerta", required: true, default: '5' },
+      ],
       workflowJson: {
         name: "AMG — Alerta estoc baix ({{CLIENT_NAME}})",
         nodes: [
@@ -348,6 +375,9 @@ async function main() {
     {
       slug: 'telegram-notificacio-cita', name: 'Notificació de cita (Telegram)', category: 'booking',
       description: 'Reserva confirmada → missatge Telegram automàtic al client amb els detalls de la cita.',
+      requiredParams: [
+        { key: 'CHAT_ID', type: 'text', label: 'Chat ID del client', required: true, help: 'El client ha d\'enviar /start al bot. Consulta: api.telegram.org/bot{TOKEN}/getUpdates' },
+      ],
       workflowJson: {
         name: 'AMG — Notificació cita Telegram ({{CLIENT_NAME}})',
         nodes: [
@@ -363,6 +393,9 @@ async function main() {
     {
       slug: 'telegram-alerta-lead', name: 'Alerta de lead (Telegram)', category: 'sales',
       description: 'Nou lead del formulari web → alerta Telegram immediata al propietari del negoci.',
+      requiredParams: [
+        { key: 'CHAT_ID', type: 'text', label: 'Chat ID del propietari', required: true, help: 'El propietari ha d\'enviar /start al bot. Consulta: api.telegram.org/bot{TOKEN}/getUpdates' },
+      ],
       workflowJson: {
         name: 'AMG — Alerta lead Telegram ({{CLIENT_NAME}})',
         nodes: [
@@ -378,6 +411,9 @@ async function main() {
     {
       slug: 'telegram-informe-diari', name: 'Informe diari (Telegram)', category: 'comunicacio',
       description: 'Cada matí envia un resum diari de les activitats i estadístiques del dia anterior via Telegram.',
+      requiredParams: [
+        { key: 'CHAT_ID', type: 'text', label: 'Chat ID de destí (propietari o grup)', required: true, help: 'Envia /start al bot i consulta: api.telegram.org/bot{TOKEN}/getUpdates' },
+      ],
       workflowJson: {
         name: 'AMG — Informe diari Telegram ({{CLIENT_NAME}})',
         nodes: [
@@ -401,8 +437,8 @@ async function main() {
   for (const tmpl of AUTOMATION_TEMPLATES) {
     await prisma.automationTemplate.upsert({
       where:  { slug: tmpl.slug },
-      update: { name: tmpl.name, description: tmpl.description, category: tmpl.category, workflowJson: tmpl.workflowJson as any },
-      create: { slug: tmpl.slug, name: tmpl.name, description: tmpl.description, category: tmpl.category, workflowJson: tmpl.workflowJson as any, isActive: true },
+      update: { name: tmpl.name, description: tmpl.description, category: tmpl.category, workflowJson: tmpl.workflowJson as any, requiredParams: tmpl.requiredParams as any },
+      create: { slug: tmpl.slug, name: tmpl.name, description: tmpl.description, category: tmpl.category, workflowJson: tmpl.workflowJson as any, requiredParams: tmpl.requiredParams as any, isActive: true },
     })
     console.log(`  Template: ${tmpl.name}`)
   }
