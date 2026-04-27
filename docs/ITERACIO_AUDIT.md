@@ -6,20 +6,20 @@ Branca: `feature/audit-improvements`
 
 | Mòdul | Playwright | Anàlisi codi | Millores | Commit |
 |---|---|---|---|---|
-| 1 — Auth + Login | ✅ OK | ✅ | ✅ | — |
-| 2 — Clients + Plans | ✅ OK | ⚠️ problemes | ⏳ | — |
+| 1 — Auth + Login | ✅ OK | ✅ | ✅ | ed834b9 |
+| 2 — Clients + Plans | ✅ OK | ✅ corregit | ✅ cerca+null | ed834b9 |
 | 3 — Micro-Landing | ⏳ | ⏳ | ⏳ | — |
-| 4 — Facturació | ✅ OK | ⚠️ UX | ⏳ | — |
-| 5 — Dashboard client | ✅ OK | ⚠️ null state | ⏳ | — |
+| 4 — Facturació | ✅ OK | ✅ corregit | ✅ label clar | ed834b9 |
+| 5 — Dashboard client | ✅ OK | ✅ corregit | ✅ null state | ed834b9 |
 | 7 — Landing Pro IA | ⏳ | ⏳ | ⏳ | — |
 | 8 — RAG / Alf | ⏳ | ⏳ | ⏳ | — |
-| 10 — Multiidioma | ⚠️ categories | ⚠️ isActive | ⏳ | — |
+| 10 — Multiidioma | ✅ OK | ✅ corregit | ✅ categories | ed834b9 |
 | 25 — WhatsApp Bot | ⏳ | ⏳ | ⏳ | — |
-| 33 — Catàleg serveis | ✅ OK | ⚠️ semàntica | ⏳ | — |
+| 33 — Catàleg serveis | ✅ OK | ⚠️ semàntica | ⏳ pendent | — |
 | 34 — Setup Wizard | ⏳ | ⏳ | ⏳ | — |
 | 35 — Credencials | ⏳ | ⏳ | ⏳ | — |
 | 36 — OAuth | ⏳ | ⏳ | ⏳ | — |
-| 38 — Workflow Builder | ⚠️ i18n bug | ⚠️ isActive | ⏳ | — |
+| 38 — Workflow Builder | ✅ OK | ✅ corregit | ✅ isActive | ed834b9 |
 | 40 — Activació serveis | ⏳ | ⏳ | ⏳ | — |
 | 41 — Telegram Bot | ⏳ | ⏳ | ⏳ | — |
 
@@ -63,4 +63,30 @@ Llegenda: ⏳ pendent · 🔧 corregint · ✅ OK · ⚠️ millores pendents ·
 
 ## Millores implementades
 
-*(s'omplirà durant la iteració)*
+### Commit ed834b9 — 2026-04-27
+
+**Seguretat:**
+- ✅ C2: ownership check — CLIENT no pot veure automations d'altres clients
+- ✅ A2: optional chaining en `activeSub` — evita crash si client sense subscripció
+
+**Integritat de dades:**
+- ✅ C1: soft delete en `deleteAutomation` (`deletedAt` en lloc de DELETE físic)
+- ✅ Schema: afegit `deletedAt DateTime?` a `ClientAutomation`
+
+**Backend:**
+- ✅ A4: `updateTemplate` ara accepta `isActive`, `slug`, `workflowJson`
+- ✅ A5: límits `take` a queries de client (subscriptions: 10, users: 50)
+
+**Frontend UX:**
+- ✅ A3: MRR usa `parseFloat(String(...))` per evitar NaN amb Decimal de Prisma
+- ✅ M1: dashboard client mostra missatge en lloc de pàgina en blanc
+- ✅ M2: `handleDelete` mostra alert si falla l'eliminació
+- ✅ M6: cerca de clients per nom/email al llistat admin (filtrat en temps real)
+- ✅ M4: columna "USU." → "Usuaris/Usuarios/Users"
+- ✅ M5: "COBRAT TOTAL" → "Cobrat (pagat)" per deixar clar que és PAID
+
+**i18n (ca/es/en):**
+- ✅ A1: 6 claus de categoria (`billing`, `booking`, `marketing`, `onboarding`, `retention`, `sales`) ara traduïdes
+- ✅ Afegida clau `search_placeholder` i `dashboard.no_data`
+
+**Verificació Playwright:** 4/4 tests ✅
