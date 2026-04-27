@@ -36,10 +36,12 @@ export const clientService = {
         subscriptions: {
           include: SUBSCRIPTION_INCLUDE,
           orderBy: { createdAt: 'desc' },
+          take:    10,
         },
         users: {
           where:  { deletedAt: null },
           select: { id: true, email: true, role: true, lastLogin: true },
+          take:   50,
         },
       },
     })

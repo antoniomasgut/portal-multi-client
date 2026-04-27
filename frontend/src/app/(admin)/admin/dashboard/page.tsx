@@ -12,14 +12,15 @@ export default function AdminDashboard() {
   const activeClients = realClients.filter(c => c.subscriptions.some(s => s.status === 'ACTIVE'))
   const mrr = realClients.reduce((acc, c) => {
     const sub = c.subscriptions.find(s => s.status === 'ACTIVE')
-    return acc + (sub ? Number(sub.priceMonthly) : 0)
+    const price = sub ? parseFloat(String(sub.priceMonthly)) || 0 : 0
+    return acc + price
   }, 0)
   const hasTestClient = clients.some(c => c.isTest)
 
   const stats = [
     { label: t('dashboard.stats_clients'),      value: realClients.length,    suffix: '',  color: 'border-l-[#FF6B00]', text: 'text-[#FF6B00]' },
     { label: t('dashboard.stats_subscriptions'), value: activeClients.length, suffix: '',  color: 'border-l-[#4ade80]', text: 'text-[#4ade80]' },
-    { label: t('dashboard.stats_mrr'),           value: mrr,                  suffix: '€', color: 'border-l-[#60a5fa]', text: 'text-[#60a5fa]' },
+    { label: t('dashboard.stats_mrr'),           value: isNaN(mrr) ? '—' : mrr.toFixed(2), suffix: isNaN(mrr) ? '' : '€', color: 'border-l-[#60a5fa]', text: 'text-[#60a5fa]' },
     { label: t('dashboard.stats_alerts'),        value: 0,                    suffix: '',  color: 'border-l-[#8888aa]', text: 'text-[var(--text-muted)]' },
   ]
 

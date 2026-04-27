@@ -19,7 +19,8 @@
     "no_subscription_tag": "SENSE SUBSCRIPCIÓ ACTIVA",
     "test_badge": "CLIENT DE PROVA",
     "unlimited": "il·limitat",
-    "loading": "Carregant..."
+    "loading": "Carregant...",
+    "no_data": "No s'han pogut carregar les dades"
   },
   "invoices": {
     "title": "Les meves Factures",

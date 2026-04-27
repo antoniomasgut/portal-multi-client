@@ -22,7 +22,7 @@ export async function listAllTemplates() {
 
 export async function listByClient(clientId: string) {
   return prisma.clientAutomation.findMany({
-    where:   { clientId },
+    where:   { clientId, deletedAt: null },
     include: {
       template: { select: { id: true, name: true, slug: true, description: true, category: true } },
       executions: {
@@ -166,8 +166,10 @@ export async function deleteAutomation(automationId: string, adminUserId: string
     )
   }
 
-  await prisma.automationExecution.deleteMany({ where: { automationId } })
-  await prisma.clientAutomation.delete({ where: { id: automationId } })
+  await prisma.clientAutomation.update({
+    where: { id: automationId },
+    data:  { deletedAt: new Date(), status: 'INACTIVE' },
+  })
 
   await prisma.auditLog.create({
     data: {
@@ -285,8 +287,11 @@ export async function createTemplate(data: {
 
 export async function updateTemplate(id: string, data: {
   name?:        string
+  slug?:        string
   description?: string
   category?:    string
+  workflowJson?: object
+  isActive?:    boolean
 }) {
   return prisma.automationTemplate.update({ where: { id }, data })
 }

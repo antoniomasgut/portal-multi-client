@@ -15,9 +15,12 @@ const createTemplateSchema = z.object({
   workflowJson: z.record(z.unknown()),
 })
 const updateTemplateSchema = z.object({
-  name:        z.string().min(1).max(120).optional(),
-  description: z.string().max(500).optional(),
-  category:    z.string().max(80).optional(),
+  name:         z.string().min(1).max(120).optional(),
+  slug:         z.string().min(1).max(80).optional(),
+  description:  z.string().max(500).optional(),
+  category:     z.string().max(80).optional(),
+  workflowJson: z.record(z.unknown()).optional(),
+  isActive:     z.boolean().optional(),
 })
 const webhookSchema = z.object({
   automationId:   z.string().uuid(),
@@ -87,6 +90,9 @@ export const testTemplateN8n = async (req: Request, res: Response, next: NextFun
 
 export const listClientAutomations = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (req.user!.role === 'CLIENT' && req.user!.clientId !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Accés denegat' })
+    }
     const data = await automationService.listByClient(req.params.id)
     res.json({ success: true, message: 'OK', data })
   } catch (err) { next(err) }
@@ -102,6 +108,9 @@ export const createClientAutomation = async (req: Request, res: Response, next: 
 
 export const toggleClientAutomation = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    if (req.user!.role === 'CLIENT' && req.user!.clientId !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Accés denegat' })
+    }
     const { active } = toggleSchema.parse(req.body)
     const data = await automationService.toggleAutomation(req.params.autoId, active, req.user!.userId)
     res.json({ success: true, message: active ? 'Automatització activada' : 'Automatització pausada', data })

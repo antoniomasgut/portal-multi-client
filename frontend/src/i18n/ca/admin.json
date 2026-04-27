@@ -52,8 +52,9 @@
     "col_subscription": "SUBSCRIPCIÓ",
     "col_services": "SERVEIS",
     "col_domain": "DOMINI",
-    "col_users": "USU.",
-    "col_actions": "ACCIONS"
+    "col_users": "Usuaris",
+    "col_actions": "ACCIONS",
+    "search_placeholder": "Cercar per nom o email..."
   },
   "services": {
     "title": "Serveis",
@@ -121,7 +122,7 @@
     "col_total": "TOTAL",
     "col_status": "ESTAT",
     "col_actions": "ACCIONS",
-    "stat_total_paid": "COBRAT TOTAL",
+    "stat_total_paid": "Cobrat (pagat)",
     "stat_this_month": "AQUEST MES",
     "stat_pending": "PENDENTS",
     "stat_overdue": "VENÇUDES",
@@ -227,7 +228,13 @@
     "category_comunicacio": "Comunicació",
     "category_facturacio": "Facturació",
     "category_ecommerce": "eCommerce",
-    "category_estoc": "Estoc"
+    "category_estoc": "Estoc",
+    "category_billing": "Facturació",
+    "category_booking": "Cites / Reserves",
+    "category_marketing": "Màrqueting",
+    "category_onboarding": "Onboarding",
+    "category_retention": "Retenció",
+    "category_sales": "Vendes"
   },
   "impersonate": {
     "banner": "Estàs accedint com a {{email}}"

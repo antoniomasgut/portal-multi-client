@@ -52,8 +52,9 @@
     "col_subscription": "SUSCRIPCIÓN",
     "col_services": "SERVICIOS",
     "col_domain": "DOMINIO",
-    "col_users": "USU.",
-    "col_actions": "ACCIONES"
+    "col_users": "Usuarios",
+    "col_actions": "ACCIONES",
+    "search_placeholder": "Buscar por nombre o email..."
   },
   "services": {
     "title": "Servicios",
@@ -121,7 +122,7 @@
     "col_total": "TOTAL",
     "col_status": "ESTADO",
     "col_actions": "ACCIONES",
-    "stat_total_paid": "COBRADO TOTAL",
+    "stat_total_paid": "Cobrado (pagado)",
     "stat_this_month": "ESTE MES",
     "stat_pending": "PENDIENTES",
     "stat_overdue": "VENCIDAS",
@@ -227,7 +228,13 @@
     "category_comunicacio": "Comunicación",
     "category_facturacio": "Facturación",
     "category_ecommerce": "eCommerce",
-    "category_estoc": "Stock"
+    "category_estoc": "Stock",
+    "category_billing": "Facturación",
+    "category_booking": "Citas / Reservas",
+    "category_marketing": "Marketing",
+    "category_onboarding": "Incorporación",
+    "category_retention": "Retención",
+    "category_sales": "Ventas"
   },
   "impersonate": {
     "banner": "Estás accediendo como {{email}}"

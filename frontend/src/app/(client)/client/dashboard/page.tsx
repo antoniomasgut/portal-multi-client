@@ -44,7 +44,13 @@ export default function ClientDashboard() {
     )
   }
 
-  if (!data) return null
+  if (!data) return (
+    <div className="p-6 flex items-center justify-center min-h-[300px]">
+      <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] uppercase">
+        {t('dashboard.no_data')}
+      </p>
+    </div>
+  )
 
   const { client, subscription: sub, usage } = data
   const planColor = sub ? (PLAN_COLORS[sub.planSlug] ?? '#FF6B00') : 'var(--text-muted)'

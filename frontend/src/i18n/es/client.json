@@ -19,7 +19,8 @@
     "no_subscription_tag": "SIN SUSCRIPCIÓN ACTIVA",
     "test_badge": "CLIENTE DE PRUEBA",
     "unlimited": "ilimitado",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "no_data": "No se han podido cargar los datos"
   },
   "invoices": {
     "title": "Mis Facturas",

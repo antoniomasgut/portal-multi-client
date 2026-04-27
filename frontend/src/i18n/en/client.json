@@ -19,7 +19,8 @@
     "no_subscription_tag": "NO ACTIVE SUBSCRIPTION",
     "test_badge": "TEST CLIENT",
     "unlimited": "unlimited",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "no_data": "Could not load data"
   },
   "invoices": {
     "title": "My Invoices",

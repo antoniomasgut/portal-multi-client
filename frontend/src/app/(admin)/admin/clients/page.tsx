@@ -25,10 +25,21 @@ export default function ClientsPage() {
   const [showForm, setShowForm]     = useState(false)
   const [editClient, setEditClient] = useState<Client | null>(null)
   const [setupClient, setSetupClient] = useState<Client | null>(null)
+  const [search, setSearch]         = useState('')
+
+  const filtered = clients.filter(c =>
+    !search ||
+    c.companyName.toLowerCase().includes(search.toLowerCase()) ||
+    c.contactEmail.toLowerCase().includes(search.toLowerCase())
+  )
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(t('clients.delete_confirm').replace('{{name}}', name))) return
-    await deleteClient.mutateAsync(id)
+    try {
+      await deleteClient.mutateAsync(id)
+    } catch (err: any) {
+      alert(err?.response?.data?.message ?? 'Error en eliminar el client')
+    }
   }
 
   const handleImpersonate = async (client: Client) => {
@@ -92,6 +103,15 @@ export default function ClientsPage() {
           </button>
         </div>
       ) : (
+        <>
+          <div className="mb-4">
+            <input
+              className="form-input max-w-xs text-sm"
+              placeholder={t('clients.search_placeholder')}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
         <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
           <div className="grid grid-cols-[2fr_1.5fr_1.8fr_1.2fr_0.6fr_200px] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
             {[
@@ -106,7 +126,7 @@ export default function ClientsPage() {
             ))}
           </div>
 
-          {clients.map((client, i) => {
+          {filtered.map((client, i) => {
             const activeSub = client.subscriptions.find(s => s.status === 'ACTIVE')
             return (
               <div
@@ -147,11 +167,11 @@ export default function ClientsPage() {
                           <span className="font-rajdhani text-sm text-[var(--text)]">{activeSub.plan?.name}</span>
                         )}
                       </div>
-                      {activeSub.priceMonthly > 0 && (
+                      {activeSub?.priceMonthly > 0 && (
                         <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">
-                          {activeSub.priceMonthly}€/mes
-                          {activeSub.priceSetup > 0 && (
-                            <span className="text-[#FF6B00]"> · {activeSub.priceSetup}€ setup</span>
+                          {activeSub?.priceMonthly}€/mes
+                          {activeSub?.priceSetup > 0 && (
+                            <span className="text-[#FF6B00]"> · {activeSub?.priceSetup}€ setup</span>
                           )}
                         </p>
                       )}
@@ -225,6 +245,7 @@ export default function ClientsPage() {
             )
           })}
         </div>
+        </>
       )}
     </div>
   )
