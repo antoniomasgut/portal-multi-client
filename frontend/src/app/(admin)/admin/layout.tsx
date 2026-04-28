@@ -11,6 +11,7 @@ const NAV_HREFS = [
   { key: 'nav.clients',     href: '/admin/clients'     },
   { key: 'nav.billing',     href: '/admin/invoices'    },
   { key: 'nav.services',    href: '/admin/services'    },
+  { key: 'nav.plans',       href: '/admin/plans'       },
   { key: 'nav.onboarding',  href: '/admin/onboarding'  },
   { key: 'nav.automations', href: '/admin/automations' },
   { key: 'nav.domains',      href: '/admin/domains'      },

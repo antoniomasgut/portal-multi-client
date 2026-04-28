@@ -43,11 +43,12 @@
 - [x] Eliminar client (✕) → confirma i desapareix
 
 ## 6. Plans i subscripcions
-- [ ] Dins d'un client → secció "Subscripció" → assignar pla
-- [ ] Els preus s'actualitzen automàticament (Bàsic 49€, Pro 99€...)
-- [ ] Afegir serveis extra per sobre del pla
-- [ ] Crear pla personalitzat amb preu manual
-- [ ] Historial de canvis de pla visible
+- [x] Dins d'un client → secció "Subscripció" → assignar pla
+- [x] Els preus s'actualitzen automàticament (Bàsic 49€, Pro 99€...)
+- [x] Afegir serveis extra per sobre del pla
+- [x] Crear pla personalitzat amb preu manual
+- [x] Historial de canvis de pla visible
+- [x] **CRUD de plans:** Gestionar preus i límits des d'Admin → Plans (Verificat amb Playwright)
 
 ## 7. Catàleg de serveis
 - [ ] `http://localhost:3001/admin/services` — llista els 12 serveis

@@ -1,26 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { z } from 'zod'
+import { planSchema } from '../schemas/plan'
 import { planService } from '../services/client.service'
-
-const planSchema = z.object({
-  name:         z.string().min(2),
-  slug:         z.string().regex(/^[a-z0-9-]+$/),
-  priceMonthly: z.number().min(0),
-  maxDomains:   z.number().int().default(1),
-  maxUsers:     z.number().int().default(1),
-  maxConversations: z.number().int().nullable().optional(),
-  maxTokens:        z.number().int().nullable().optional(),
-  maxAutomations:   z.number().int().nullable().optional(),
-  maxIntegrations:  z.number().int().nullable().optional(),
-  maxRagDocuments:  z.number().int().nullable().optional(),
-  hasLandingPro:   z.boolean().default(false),
-  hasCustomDomain: z.boolean().default(false),
-  hasRag:          z.boolean().default(false),
-  hasTelegram:     z.boolean().default(false),
-  extraConversationPrice: z.number().min(0).default(0.005),
-  extraTokenPrice:        z.number().min(0).default(0.0001),
-  isActive: z.boolean().default(true),
-})
 
 export async function listPlans(req: Request, res: Response, next: NextFunction) {
   try {

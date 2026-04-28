@@ -23,6 +23,17 @@ export interface Plan {
   priceMonthly: number
   maxDomains:   number
   maxUsers:     number
+  maxConversations?: number | null
+  maxTokens?:        number | null
+  maxAutomations?:   number | null
+  maxIntegrations?:  number | null
+  maxRagDocuments?:  number | null
+  hasLandingPro:   boolean
+  hasCustomDomain: boolean
+  hasRag:          boolean
+  hasTelegram:     boolean
+  extraConversationPrice: number
+  extraTokenPrice:        number
   isActive:     boolean
   services:     PlanService[]
 }

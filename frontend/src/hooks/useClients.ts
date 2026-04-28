@@ -14,9 +14,35 @@ export function usePlans() {
   return useQuery<Plan[]>({
     queryKey: ['plans'],
     queryFn:  async () => {
-      const res = await api.get('/api/clients/plans')
+      const res = await api.get('/api/plans')
       return res.data.data
     },
+  })
+}
+
+export function useCreatePlan() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Partial<Plan>) => api.post('/api/plans', data).then(r => r.data.data),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: ['plans'] }),
+  })
+}
+
+export function useUpdatePlan(id: string) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (data: Partial<Plan>) => api.patch(`/api/plans/${id}`, data).then(r => r.data.data),
+    onSuccess:  () => {
+      qc.invalidateQueries({ queryKey: ['plans'] })
+    },
+  })
+}
+
+export function useDeletePlan() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/api/plans/${id}`),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: ['plans'] }),
   })
 }
 
