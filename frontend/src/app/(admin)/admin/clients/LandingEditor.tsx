@@ -301,14 +301,12 @@ export default function LandingEditor({ clientId, companyName }: Props) {
 
   const doSave = async (data: FormData) => {
     setSaveError(''); setSaveOk(false)
-    console.log('[LandingEditor] saving — fontPair:', data.fontPair, '| title:', data.title, '| subtitle:', data.subtitle?.slice(0, 30))
     await upsert.mutateAsync(data)
     setSaveOk(true)
     setTimeout(() => setSaveOk(false), 3000)
   }
 
   const onSubmit = async (data: FormData) => {
-    console.log('[LandingEditor] onSubmit called, data:', data)
     try {
       await doSave(data)
     } catch (err: any) {

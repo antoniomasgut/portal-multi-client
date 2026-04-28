@@ -217,10 +217,10 @@ function ServiceTutorial({ steps }: { steps: { step: string; desc: string }[] })
 
 export default function ClientServiceManager({ clientId, companyName, services }: Props) {
   const toggle = useToggleService(clientId)
-  const [expandedId, setExpandedId] = useState<string | null>(
-    // auto-expandir el primer servei actiu (si n'hi ha)
+  const [expandedId,   setExpandedId]   = useState<string | null>(
     services.find(s => s.active)?.serviceId ?? null
   )
+  const [toggleError, setToggleError] = useState('')
 
   if (services.length === 0) {
     return (
@@ -232,6 +232,7 @@ export default function ClientServiceManager({ clientId, companyName, services }
 
   return (
     <div className="space-y-3">
+      {toggleError && <p className="font-mono text-[10px] text-[#ff4444] tracking-wider">{toggleError}</p>}
       {services.map(svc => {
         const isExpanded = expandedId === svc.serviceId
         const tutorial   = getTutorial(svc.serviceSlug)
@@ -286,8 +287,12 @@ export default function ClientServiceManager({ clientId, companyName, services }
                   type="button"
                   disabled={toggle.isPending}
                   onClick={() => {
+                    setToggleError('')
                     const next = !svc.active
-                    toggle.mutate({ serviceId: svc.serviceId, active: next })
+                    toggle.mutate(
+                      { serviceId: svc.serviceId, active: next },
+                      { onError: () => setToggleError(`Error en ${next ? 'activar' : 'desactivar'} el servei. Intenta-ho de nou.`) }
+                    )
                     if (next) setExpandedId(svc.serviceId)
                     else if (expandedId === svc.serviceId) setExpandedId(null)
                   }}

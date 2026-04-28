@@ -68,6 +68,7 @@ export default function WhatsAppBotPanel({ clientId, companyName }: { clientId: 
   const [aiSector,      setAiSector]      = useState('')
   const [aiLang,        setAiLang]        = useState('ca')
   const [saved,         setSaved]         = useState(false)
+  const [saveError,     setSaveError]     = useState('')
 
   const cfg = data?.data as WhatsAppBotConfig | null
 
@@ -82,14 +83,19 @@ export default function WhatsAppBotPanel({ clientId, companyName }: { clientId: 
   }, [cfg])
 
   async function handleSave() {
-    await save.mutateAsync({ botName, greeting, tone, businessHours: businessHours || null, faqs, isActive })
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+    setSaveError('')
+    try {
+      await save.mutateAsync({ botName, greeting, tone, businessHours: businessHours || null, faqs, isActive })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch {
+      setSaveError('Error en desar la configuració. Intenta-ho de nou.')
+    }
   }
 
   async function handleGenerate() {
     if (!aiSector.trim()) return
-    const res = await generate.mutateAsync({ companyName, sector: aiSector, lang: aiLang })
+    const res = await generate.mutateAsync({ companyName, sector: aiSector, lang: aiLang }).catch(() => null)
     if (res?.data) {
       const d = res.data
       if (d.botName)       setBotName(d.botName)
@@ -182,6 +188,7 @@ export default function WhatsAppBotPanel({ clientId, companyName }: { clientId: 
         </div>
       </div>
 
+      {saveError && <p className="text-red-400 text-sm">{saveError}</p>}
       <div className="flex justify-end gap-3">
         {saved && <span className="text-green-400 text-sm self-center">✓ Desat</span>}
         <button className="btn-primary" onClick={handleSave} disabled={save.isPending}>

@@ -33,9 +33,20 @@
 | 38 — Constructor Workflows IA | 2026-04-24 | Modal crear/editar templates n8n amb JSON editor, validació, auto-slug, integrat a `/admin/automations` |
 | 10 — Multiidioma (complert) | 2026-04-25 | Totes les pàgines admin + client dashboard ara usen `useTranslation()`. Claus ca/es/en per invoices, services, settings, automations, client dashboard. **Abans:** només el menú es traduïa |
 | 41 — Agent Suport Telegram | 2026-04-25 | `TelegramBotConfig` BD, endpoints GET/PUT/generate, `TelegramBotPanel.tsx`, `useTelegramBot.ts`, 3 templates n8n Telegram, integrat a ClientServiceManager |
+| 42 — Gemini CLI Integration | 2026-04-27 | Creació de `GEMINI.md`, adaptació del workflow, refactorització completa de controllers/services i instal·lació de Playwright. |
 
 ### 🔄 En progrés
 *(cap)*
+
+### Sessió 2026-04-27 (Gemini CLI Integration & Audit)
+
+**Integració i Auditoria**
+- Creació de `GEMINI.md` amb mandats estrictes (Estructura Svc/Ctrl, Soft Delete, Zod).
+- **Refactorització Backend**: Eliminades crides directes a Prisma en 4 controladors i corregits 5 serveis que no filtraven `deletedAt`.
+- **Playwright**: Instal·lat i configurat a `frontend/`. Creat test de fum per al Login.
+- **Entorn**: Script `check-env.ts` creat i `.env` inicialitzat amb placeholders gratuïts.
+- Branca `feature/gemini-cli-integration` completada.
+
 
 ### ❌ Pendents — Fase 1 (MVP)
 - [x] Mòdul 0  — Docker + Caddy + Infraestructura

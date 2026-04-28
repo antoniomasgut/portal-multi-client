@@ -115,10 +115,25 @@ export const clientService = {
   },
 
   async softDelete(id: string) {
-    return prisma.client.update({
-      where: { id },
-      data:  { deletedAt: new Date() },
-    })
+    const now = new Date()
+    await prisma.$transaction([
+      prisma.subscription.updateMany({
+        where: { clientId: id, status: 'ACTIVE' },
+        data:  { status: 'CANCELLED', cancelledAt: now },
+      }),
+      prisma.user.updateMany({
+        where: { clientId: id, deletedAt: null },
+        data:  { deletedAt: now },
+      }),
+      prisma.clientAutomation.updateMany({
+        where: { clientId: id, deletedAt: null },
+        data:  { deletedAt: now, status: 'INACTIVE' },
+      }),
+      prisma.client.update({
+        where: { id },
+        data:  { deletedAt: now },
+      }),
+    ])
   },
 
   async assignPlan(clientId: string, opts: {
@@ -217,6 +232,40 @@ export const planService = {
       orderBy: { priceMonthly: 'asc' },
     })
   },
+
+  async findById(id: string) {
+    return prisma.plan.findUnique({
+      where:   { id },
+      include: {
+        services: { include: { service: true } },
+        _count:   { select: { subscriptions: true } },
+      },
+    })
+  },
+
+  async create(data: any) {
+    return prisma.plan.create({
+      data,
+      include: { services: { include: { service: true } } },
+    })
+  },
+
+  async update(id: string, data: any) {
+    return prisma.plan.update({
+      where:   { id },
+      data,
+      include: { services: { include: { service: true } } },
+    })
+  },
+
+  async delete(id: string) {
+    const plan = await this.findById(id)
+    if (!plan) return
+    if (plan._count.subscriptions > 0) {
+      return prisma.plan.update({ where: { id }, data: { isActive: false } })
+    }
+    return prisma.plan.delete({ where: { id } })
+  }
 }
 
 // ── ClientUsage ──────────────────────────────────────────────────────────

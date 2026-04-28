@@ -19,6 +19,10 @@ const schema    = z.object({
 
 router.get('/:id/telegram-bot', requireAuth, async (req, res, next) => {
   try {
+    const { user } = req as any
+    if (user.role === 'CLIENT' && user.clientId !== req.params.id) {
+      return res.status(403).json({ success: false, message: 'Accés denegat', data: null })
+    }
     const cfg = await prisma.telegramBotConfig.findUnique({ where: { clientId: req.params.id } })
     res.json({ success: true, message: 'OK', data: cfg })
   } catch (err) { next(err) }

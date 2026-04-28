@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import type { Client } from '../../../../types'
 import ConnectionsPanel from './ConnectionsPanel'
+import CredentialsPanel from './CredentialsPanel'
 
 const STEPS = [
   { id: 'verificar',   label: 'Verificar dades',   icon: '✓' },
@@ -71,7 +72,7 @@ export default function SetupWizard({ client, onClose }: Props) {
               <Row label="Domini"   value={client.domain || '—'} />
               <Row label="Pla"      value={activeSub?.plan?.name ?? (activeSub?.isCustom ? 'Personalitzat' : '—')} />
               {activeSub && (
-                <Row label="Preu"   value={`${activeSub.priceMonthly}€/mes${Number(activeSub.priceSetup) > 0 ? ` · ${activeSub.priceSetup}€ setup` : ''}`} />
+                <Row label="Preu"   value={`${parseFloat(String(activeSub.priceMonthly)) || 0}€/mes${parseFloat(String(activeSub.priceSetup)) > 0 ? ` · ${parseFloat(String(activeSub.priceSetup))}€ setup` : ''}`} />
               )}
               {client.isTest && (
                 <div className="flex items-center gap-2 mt-2">
@@ -94,11 +95,9 @@ export default function SetupWizard({ client, onClose }: Props) {
           <div>
             <p className="font-mono text-[10px] tracking-[4px] text-[var(--text-muted)] uppercase mb-3">Credencials API</p>
             <p className="font-rajdhani text-[var(--text-muted)] text-sm mb-5">
-              Afegeix les claus API manuals que no s'obtenen via OAuth (n8n webhook URL, etc.)
+              Afegeix les claus API manuals que no s'obtenen via OAuth (n8n webhook URL, SMTP, etc.)
             </p>
-            <p className="font-mono text-[10px] text-[var(--text-muted)] tracking-widest">
-              → Ves a EDITAR el client per gestionar les credencials API
-            </p>
+            <CredentialsPanel clientId={client.id} />
           </div>
         )}
 

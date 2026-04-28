@@ -112,15 +112,23 @@ export async function createAutomation(
   })
 }
 
+export async function findById(id: string, clientId?: string) {
+  return prisma.clientAutomation.findFirst({
+    where: {
+      id,
+      deletedAt: null,
+      ...(clientId && { clientId })
+    },
+    include: { client: true, template: true }
+  })
+}
+
 export async function toggleAutomation(
   automationId: string,
   active:       boolean,
   adminUserId:  string
 ) {
-  const automation = await prisma.clientAutomation.findUnique({
-    where:   { id: automationId },
-    include: { client: true },
-  })
+  const automation = await findById(automationId)
   if (!automation) throw Object.assign(new Error('Automatització no trobada'), { status: 404 })
 
   const newStatus = active ? 'ACTIVE' : 'PAUSED'
@@ -154,10 +162,7 @@ export async function toggleAutomation(
 }
 
 export async function deleteAutomation(automationId: string, adminUserId: string) {
-  const automation = await prisma.clientAutomation.findUnique({
-    where:   { id: automationId },
-    include: { client: true },
-  })
+  const automation = await findById(automationId)
   if (!automation) throw Object.assign(new Error('Automatització no trobada'), { status: 404 })
 
   if (automation.n8nWorkflowId && n8n.isN8nAvailable()) {
@@ -193,7 +198,7 @@ export async function recordExecution(
   durationMs:     number,
   error?:         string
 ) {
-  const automation = await prisma.clientAutomation.findUnique({ where: { id: automationId } })
+  const automation = await findById(automationId)
   if (!automation) return
 
   await prisma.automationExecution.create({
@@ -269,6 +274,7 @@ export async function listTemplatesWithUsage() {
   })
   const counts = await prisma.clientAutomation.groupBy({
     by:    ['templateId'],
+    where: { deletedAt: null },
     _count: { _all: true },
   })
   const countMap = Object.fromEntries(counts.map(c => [c.templateId, c._count._all]))

@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
 import { invoiceService } from '../services/invoice.service'
 import { sendNotification } from '../services/notifications'
-import { prisma } from '../db'
 
 const generateSchema = z.object({
   clientId:   z.string().uuid(),
@@ -32,12 +31,9 @@ export const generateInvoice = async (req: Request, res: Response, next: NextFun
     const body    = generateSchema.parse(req.body)
     const invoice = await invoiceService.generate(body.clientId, body)
 
-    // Email de factura generada
-    const client = await prisma.client.findFirst({
-      where:  { id: body.clientId, deletedAt: null, isTest: false },
-      select: { contactEmail: true, contactName: true, language: true },
-    })
-    if (client) {
+    // Email de factura generada (dades ja incloses en la resposta de generate)
+    const client = (invoice as any).client
+    if (client && !client.isTest) {
       const month = new Date(invoice.issueDate).toLocaleDateString(
         client.language === 'en' ? 'en-GB' : client.language === 'es' ? 'es-ES' : 'ca-ES',
         { month: 'long', year: 'numeric' }

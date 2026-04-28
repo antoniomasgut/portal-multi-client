@@ -45,7 +45,7 @@ export const invoiceService = {
     return prisma.invoice.findFirst({
       where:   { id, deletedAt: null },
       include: {
-        client: { select: { companyName: true, contactEmail: true, contactName: true, nif: true, address: true } },
+        client: { select: { companyName: true, contactEmail: true, contactName: true, nif: true, address: true, language: true, isTest: true } },
         items:  true,
       },
     })
@@ -126,27 +126,27 @@ export const invoiceService = {
           })),
         },
       },
-      include: { items: true },
+      include: { items: true, client: { select: { contactEmail: true, contactName: true, language: true, isTest: true } } },
     })
   },
 
   async markPaid(id: string) {
     return prisma.invoice.update({
-      where: { id },
+      where: { id, deletedAt: null },
       data:  { status: 'PAID', paidAt: new Date() },
     })
   },
 
   async markOverdue(id: string) {
     return prisma.invoice.update({
-      where: { id },
+      where: { id, deletedAt: null },
       data:  { status: 'OVERDUE' },
     })
   },
 
   async cancel(id: string) {
     return prisma.invoice.update({
-      where: { id },
+      where: { id, deletedAt: null },
       data:  { status: 'CANCELLED' },
     })
   },

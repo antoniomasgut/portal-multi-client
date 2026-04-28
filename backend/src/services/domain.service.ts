@@ -74,6 +74,12 @@ export async function verifyDomain(domainId: string, clientId: string) {
   })
 }
 
+export async function findById(id: string, clientId: string) {
+  return prisma.clientDomain.findFirst({
+    where: { id, clientId },
+  })
+}
+
 export async function listAllDomains() {
   return prisma.clientDomain.findMany({
     include: { client: { select: { id: true, companyName: true, contactEmail: true } } },

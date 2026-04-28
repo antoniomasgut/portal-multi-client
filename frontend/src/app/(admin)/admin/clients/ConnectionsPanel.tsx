@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import { useConnectionStatus, useStartOAuth, useDisconnectOAuth } from '../../../../hooks/useOAuth'
 
 const PROVIDERS = [
@@ -24,6 +25,7 @@ export default function ConnectionsPanel({ clientId, filterProvider }: Props) {
   const { data: status = {}, isLoading } = useConnectionStatus(clientId)
   const startOAuth   = useStartOAuth(clientId)
   const disconnect   = useDisconnectOAuth(clientId)
+  const [actionError, setActionError] = useState('')
 
   const providers = filterProvider ? PROVIDERS.filter(p => p.id === filterProvider) : PROVIDERS
 
@@ -33,6 +35,7 @@ export default function ConnectionsPanel({ clientId, filterProvider }: Props) {
 
   return (
     <div className="space-y-3">
+      {actionError && <p className="font-mono text-[10px] text-[#ff4444]">{actionError}</p>}
       {providers.map(p => {
         const connected = status[p.id] ?? false
         return (
@@ -65,7 +68,10 @@ export default function ConnectionsPanel({ clientId, filterProvider }: Props) {
                 <button
                   type="button"
                   className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors border border-[#ff4444]/30 hover:border-[#ff4444]/50 px-2.5 py-1"
-                  onClick={() => disconnect.mutate(p.id)}
+                  onClick={() => {
+                    setActionError('')
+                    disconnect.mutate(p.id, { onError: () => setActionError('Error en desconnectar. Intenta-ho de nou.') })
+                  }}
                   disabled={disconnect.isPending}
                 >
                   DESCONNECTAR
@@ -74,7 +80,10 @@ export default function ConnectionsPanel({ clientId, filterProvider }: Props) {
                 <button
                   type="button"
                   className="btn-outline text-[9px] px-3 py-1.5"
-                  onClick={() => startOAuth.mutate(p.id)}
+                  onClick={() => {
+                    setActionError('')
+                    startOAuth.mutate(p.id, { onError: () => setActionError('Error en iniciar la connexió OAuth.') })
+                  }}
                   disabled={startOAuth.isPending}
                 >
                   {startOAuth.isPending ? 'OBRINT...' : 'CONNECTAR →'}

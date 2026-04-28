@@ -1,6 +1,6 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
-import { prisma } from '../db'
+import { planService } from '../services/client.service'
 
 const planSchema = z.object({
   name:         z.string().min(2),
@@ -22,65 +22,42 @@ const planSchema = z.object({
   isActive: z.boolean().default(true),
 })
 
-const PLAN_INCLUDE = {
-  services: { include: { service: true } },
-  _count:   { select: { subscriptions: true } },
+export async function listPlans(req: Request, res: Response, next: NextFunction) {
+  try {
+    const plans = await planService.list()
+    res.json({ success: true, message: 'OK', data: plans })
+  } catch (err) { next(err) }
 }
 
-export async function listPlans(req: Request, res: Response) {
-  const plans = await prisma.plan.findMany({
-    where:   { isActive: true },
-    include: PLAN_INCLUDE,
-    orderBy: { priceMonthly: 'asc' },
-  })
-  res.json({ success: true, message: 'OK', data: plans })
+export async function getPlan(req: Request, res: Response, next: NextFunction) {
+  try {
+    const plan = await planService.findById(req.params.id)
+    if (!plan) {
+      return res.status(404).json({ success: false, message: 'Pla no trobat', data: null })
+    }
+    res.json({ success: true, message: 'OK', data: plan })
+  } catch (err) { next(err) }
 }
 
-export async function getPlan(req: Request, res: Response) {
-  const plan = await prisma.plan.findUnique({
-    where:   { id: req.params.id },
-    include: PLAN_INCLUDE,
-  })
-  if (!plan) { res.status(404).json({ success: false, message: 'Pla no trobat', data: null }); return }
-  res.json({ success: true, message: 'OK', data: plan })
+export async function createPlan(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = planSchema.parse(req.body)
+    const plan = await planService.create(data)
+    res.status(201).json({ success: true, message: 'Pla creat', data: plan })
+  } catch (err) { next(err) }
 }
 
-export async function createPlan(req: Request, res: Response) {
-  const parsed = planSchema.safeParse(req.body)
-  if (!parsed.success) {
-    res.status(400).json({ success: false, message: 'Dades invàlides', data: parsed.error.flatten() })
-    return
-  }
-  const plan = await prisma.plan.create({ data: parsed.data, include: PLAN_INCLUDE })
-  res.status(201).json({ success: true, message: 'Pla creat', data: plan })
+export async function updatePlan(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = planSchema.partial().parse(req.body)
+    const plan = await planService.update(req.params.id, data)
+    res.json({ success: true, message: 'Pla actualitzat', data: plan })
+  } catch (err) { next(err) }
 }
 
-export async function updatePlan(req: Request, res: Response) {
-  const parsed = planSchema.partial().safeParse(req.body)
-  if (!parsed.success) {
-    res.status(400).json({ success: false, message: 'Dades invàlides', data: parsed.error.flatten() })
-    return
-  }
-  const plan = await prisma.plan.update({
-    where:   { id: req.params.id },
-    data:    parsed.data,
-    include: PLAN_INCLUDE,
-  })
-  res.json({ success: true, message: 'Pla actualitzat', data: plan })
-}
-
-export async function deletePlan(req: Request, res: Response) {
-  const plan = await prisma.plan.findUnique({
-    where:   { id: req.params.id },
-    include: { _count: { select: { subscriptions: true } } },
-  })
-  if (!plan) { res.status(404).json({ success: false, message: 'Pla no trobat', data: null }); return }
-  if (plan._count.subscriptions > 0) {
-    // Soft-delete: desactivar en lloc d'eliminar si té subscripcions
-    await prisma.plan.update({ where: { id: req.params.id }, data: { isActive: false } })
-    res.json({ success: true, message: 'Pla desactivat (té subscripcions actives)', data: null })
-    return
-  }
-  await prisma.plan.delete({ where: { id: req.params.id } })
-  res.json({ success: true, message: 'Pla eliminat', data: null })
+export async function deletePlan(req: Request, res: Response, next: NextFunction) {
+  try {
+    await planService.delete(req.params.id)
+    res.json({ success: true, message: 'Pla processat', data: null })
+  } catch (err) { next(err) }
 }
