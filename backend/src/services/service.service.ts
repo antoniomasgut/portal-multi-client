@@ -9,19 +9,39 @@ const WITH_PLANS = {
 
 export const serviceService = {
   /** Llista serveis actius — per a clients i selectors de plans */
-  async list() {
+  async list(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
+    const { search, sortBy = 'name', sortDir = 'asc' } = params
+
     return prisma.service.findMany({
-      where:   { isActive: true },
+      where: {
+        isActive: true,
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      },
       include: WITH_PLANS,
-      orderBy: { name: 'asc' },
+      orderBy: { [sortBy]: sortDir },
     })
   },
 
   /** Llista tots els serveis (actius + inactius) — per a la pàgina d'admin */
-  async listAll() {
+  async listAll(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
+    const { search, sortBy = 'category', sortDir = 'asc' } = params
+
     return prisma.service.findMany({
+      where: {
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      },
       include: WITH_PLANS,
-      orderBy: [{ category: 'asc' }, { name: 'asc' }],
+      orderBy: { [sortBy]: sortDir },
     })
   },
 

@@ -19,20 +19,32 @@ export default function InvoicesPage() {
     PAID: t('invoices.status_paid'), OVERDUE: t('invoices.status_overdue'),
     CANCELLED: t('invoices.status_cancelled'),
   }
-  const { data: invoices = [], isLoading } = useInvoices()
+
+  const [search, setSearch]               = useState('')
+  const [filterStatus, setFilterStatus]   = useState('')
+  const [sortBy, setSortBy]               = useState('issueDate')
+  const [sortDir, setSortDir]             = useState<'asc' | 'desc'>('desc')
+
+  const { data: invoices = [], isLoading } = useInvoices({ status: filterStatus || undefined, search, sortBy, sortDir })
   const { data: stats }                   = useInvoiceStats()
   const { data: clients = [] }            = useClients()
   const generate    = useGenerateInvoice()
   const markPaid    = useMarkPaid()
   const cancel      = useCancelInvoice()
 
-  const [filterStatus, setFilterStatus]   = useState('')
   const [showGenForm, setShowGenForm]     = useState(false)
   const [genClientId, setGenClientId]     = useState('')
   const [genDueDays, setGenDueDays]       = useState('30')
   const [genNotes, setGenNotes]           = useState('')
 
-  const filtered = filterStatus ? invoices.filter(i => i.status === filterStatus) : invoices
+  const toggleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortDir('asc')
+    }
+  }
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,7 +60,6 @@ export default function InvoicesPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto animate-fade-in-up">
 
-      {/* ── Header ──────────────────────────────────────────── */}
       <div className="flex justify-between items-start mb-8">
         <div>
           <p className="section-tag">{t('invoices.tag')}</p>
@@ -64,7 +75,6 @@ export default function InvoicesPage() {
         </button>
       </div>
 
-      {/* ── Stats ───────────────────────────────────────────── */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {[
@@ -81,29 +91,35 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      {/* ── Filtre per estat ─────────────────────────────────── */}
-      <div className="flex gap-2 mb-4">
-        {['', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED'].map(s => (
-          <button
-            key={s}
-            onClick={() => setFilterStatus(s)}
-            className={`font-mono text-[9px] tracking-widest px-3 py-1.5 border transition-colors ${
-              filterStatus === s
-                ? 'border-[#FF6B00] text-[#FF6B00] bg-[#FF6B00]/10'
-                : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text-muted)]'
-            }`}
-          >
-            {s ? t(`invoices.status_${s.toLowerCase()}`) : t('invoices.filter_all')}
-          </button>
-        ))}
+      <div className="flex gap-4 mb-6">
+        <input
+          className="form-input max-w-xs text-sm"
+          placeholder={t('clients.search_placeholder')}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+        <div className="flex gap-2">
+          {['', 'PENDING', 'PAID', 'OVERDUE', 'CANCELLED'].map(s => (
+            <button
+              key={s}
+              onClick={() => setFilterStatus(s)}
+              className={`font-mono text-[9px] tracking-widest px-3 py-1.5 border transition-colors ${
+                filterStatus === s
+                  ? 'border-[#FF6B00] text-[#FF6B00] bg-[#FF6B00]/10'
+                  : 'border-[var(--border)] text-[var(--text-muted)] hover:border-[var(--text-muted)]'
+              }`}
+            >
+              {s ? t(`invoices.status_${s.toLowerCase()}`) : t('invoices.filter_all')}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* ── Taula ───────────────────────────────────────────── */}
       {isLoading ? (
         <div className="bg-[var(--bg-2)] border border-[var(--border)] p-16 text-center">
           <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">{t('invoices.loading')}</p>
         </div>
-      ) : filtered.length === 0 ? (
+      ) : invoices.length === 0 ? (
         <div className="bg-[var(--bg-2)] border border-[var(--border)] p-12 text-center">
           <p className="font-mono text-[11px] text-[var(--text-muted)] tracking-widest mb-4">{t('invoices.no_invoices')}</p>
           <button className="btn-primary text-xs" onClick={() => setShowGenForm(true)}>{t('invoices.generate_invoice')}</button>
@@ -111,42 +127,44 @@ export default function InvoicesPage() {
       ) : (
         <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
           <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
-            {[t('invoices.col_number'), t('invoices.col_client'), t('invoices.col_issue'), t('invoices.col_due'), t('invoices.col_total'), t('invoices.col_status'), t('invoices.col_actions')].map(h => (
-              <p key={h} className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase">{h}</p>
+            {[
+              { label: t('invoices.col_number'), key: 'number' },
+              { label: t('invoices.col_client'), key: 'client' },
+              { label: t('invoices.col_issue'), key: 'issueDate' },
+              { label: t('invoices.col_due'), key: 'dueDate' },
+              { label: t('invoices.col_total'), key: 'total' },
+              { label: t('invoices.col_status'), key: 'status' },
+              { label: t('invoices.col_actions'), key: '' },
+            ].map(h => (
+              <button 
+                key={h.label}
+                className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase text-left flex items-center gap-1"
+                onClick={() => h.key && toggleSort(h.key)}
+              >
+                {h.label}
+                {sortBy === h.key && <span className="text-[10px]">{sortDir === 'asc' ? '▲' : '▼'}</span>}
+              </button>
             ))}
           </div>
-          {filtered.map((inv, i) => (
-            <div
-              key={inv.id}
-              className={`grid grid-cols-[1fr_2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-4 items-center
-                hover:bg-[var(--bg-1)] transition-colors
-                ${i < filtered.length - 1 ? 'border-b border-[var(--border)]' : ''}`}
-            >
+          {invoices.map((inv, i) => (
+            <div key={inv.id} className={`grid grid-cols-[1fr_2fr_1fr_1fr_1fr_1fr_auto] gap-4 px-5 py-4 items-center hover:bg-[var(--bg-1)] transition-colors ${i < invoices.length - 1 ? 'border-b border-[var(--border)]' : ''}`}>
               <p className="font-mono text-[10px] text-[var(--text)]">{inv.number}</p>
               <div>
                 <p className="font-rajdhani font-semibold text-[var(--text)] text-sm leading-tight">{inv.client?.companyName}</p>
                 <p className="font-mono text-[9px] text-[var(--text-muted)]">{inv.client?.contactEmail}</p>
               </div>
               <p className="font-mono text-[10px] text-[var(--text-muted)]">{fmtDate(inv.issueDate)}</p>
-              <p className={`font-mono text-[10px] ${inv.status === 'OVERDUE' ? 'text-[#ff4444]' : 'text-[var(--text-muted)]'}`}>
-                {fmtDate(inv.dueDate)}
-              </p>
+              <p className={`font-mono text-[10px] ${inv.status === 'OVERDUE' ? 'text-[#ff4444]' : 'text-[var(--text-muted)]'}`}>{fmtDate(inv.dueDate)}</p>
               <p className="font-mono text-[11px] text-[var(--text)] font-semibold">{Number(inv.total).toFixed(2)}€</p>
               <span className={`font-mono text-[8px] tracking-widest px-2 py-0.5 border w-fit ${STATUS_COLORS[inv.status] ?? ''}`}>
                 {STATUS_LABELS[inv.status] ?? inv.status}
               </span>
               <div className="flex gap-1.5 justify-end">
                 {inv.status === 'PENDING' && (
-                  <button
-                    className="font-mono text-[9px] px-2.5 py-1 border border-[#4ade80]/40 text-[#4ade80] hover:bg-[#4ade80]/10 transition-colors"
-                    onClick={() => markPaid.mutate(inv.id)}
-                  >{t('invoices.pay')}</button>
+                  <button className="font-mono text-[9px] px-2.5 py-1 border border-[#4ade80]/40 text-[#4ade80] hover:bg-[#4ade80]/10 transition-colors" onClick={() => markPaid.mutate(inv.id)}>{t('invoices.pay')}</button>
                 )}
                 {(inv.status === 'PENDING' || inv.status === 'OVERDUE') && (
-                  <button
-                    className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1"
-                    onClick={() => cancel.mutate(inv.id)}
-                  >✕</button>
+                  <button className="font-mono text-[9px] text-[#ff4444] hover:text-[#ff6666] tracking-widest transition-colors px-1" onClick={() => cancel.mutate(inv.id)}>✕</button>
                 )}
               </div>
             </div>
@@ -154,7 +172,6 @@ export default function InvoicesPage() {
         </div>
       )}
 
-      {/* ── Modal generar factura ──────────────────────────── */}
       {showGenForm && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-[var(--bg-1)] border border-[var(--border)] w-full max-w-md">
@@ -168,34 +185,18 @@ export default function InvoicesPage() {
             <form onSubmit={handleGenerate} className="p-6 space-y-4">
               <div>
                 <label className="form-label">{t('invoices.form_label_client')}</label>
-                <select
-                  className="form-input"
-                  value={genClientId}
-                  onChange={e => setGenClientId(e.target.value)}
-                  required
-                >
+                <select className="form-input" value={genClientId} onChange={e => setGenClientId(e.target.value)} required>
                   <option value="">{t('invoices.form_select_client')}</option>
-                  {clients.filter(c => !c.isTest && c.subscriptions.length > 0).map(c => (
-                    <option key={c.id} value={c.id}>{c.companyName}</option>
-                  ))}
+                  {clients.filter(c => !c.isTest && c.subscriptions.length > 0).map(c => <option key={c.id} value={c.id}>{c.companyName}</option>)}
                 </select>
               </div>
               <div>
                 <label className="form-label">{t('invoices.form_label_due_days')}</label>
-                <input
-                  className="form-input"
-                  type="number" min="1" max="365"
-                  value={genDueDays}
-                  onChange={e => setGenDueDays(e.target.value)}
-                />
+                <input className="form-input" type="number" min="1" max="365" value={genDueDays} onChange={e => setGenDueDays(e.target.value)} />
               </div>
               <div>
                 <label className="form-label">{t('invoices.form_label_notes')}</label>
-                <textarea
-                  className="form-input h-16 resize-none"
-                  value={genNotes}
-                  onChange={e => setGenNotes(e.target.value)}
-                />
+                <textarea className="form-input h-16 resize-none" value={genNotes} onChange={e => setGenNotes(e.target.value)} />
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="submit" className="btn-primary text-xs" disabled={generate.isPending || !genClientId}>
@@ -203,9 +204,6 @@ export default function InvoicesPage() {
                 </button>
                 <button type="button" className="btn-outline text-xs" onClick={() => setShowGenForm(false)}>{t('invoices.form_btn_cancel')}</button>
               </div>
-              {generate.isError && (
-                <p className="font-mono text-[10px] text-[#ff4444]">{(generate.error as any)?.response?.data?.message}</p>
-              )}
             </form>
           </div>
         </div>

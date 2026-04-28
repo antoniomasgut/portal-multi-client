@@ -10,11 +10,11 @@ type PlanPayload =
 
 // ── Plans ────────────────────────────────────────────────────────────────
 
-export function usePlans() {
+export function usePlans(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
   return useQuery<Plan[]>({
-    queryKey: ['plans'],
+    queryKey: ['plans', params],
     queryFn:  async () => {
-      const res = await api.get('/api/plans')
+      const res = await api.get('/api/plans', { params })
       return res.data.data
     },
   })
@@ -48,11 +48,11 @@ export function useDeletePlan() {
 
 // ── Clients ──────────────────────────────────────────────────────────────
 
-export function useClients() {
+export function useClients(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
   return useQuery<Client[]>({
-    queryKey: ['clients'],
+    queryKey: ['clients', params],
     queryFn:  async () => {
-      const res = await api.get('/api/clients')
+      const res = await api.get('/api/clients', { params })
       return res.data.data
     },
   })

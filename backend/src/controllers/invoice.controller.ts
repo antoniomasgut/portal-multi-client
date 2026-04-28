@@ -12,8 +12,14 @@ const generateSchema = z.object({
 
 export const listInvoices = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { clientId, status } = req.query as Record<string, string>
-    const invoices = await invoiceService.list({ clientId, status })
+    const { clientId, status, search, sortBy, sortDir } = req.query
+    const invoices = await invoiceService.list({ 
+      clientId: clientId as string,
+      status:   status   as string,
+      search:   search   as string, 
+      sortBy:   sortBy   as string, 
+      sortDir:  sortDir  as 'asc' | 'desc'
+    })
     res.json({ success: true, message: 'OK', data: invoices })
   } catch (err) { next(err) }
 }

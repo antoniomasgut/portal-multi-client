@@ -37,14 +37,11 @@ export interface InvoiceStats {
   thisMonth:    number
 }
 
-export function useInvoices(filters?: { clientId?: string; status?: string }) {
-  const params = new URLSearchParams()
-  if (filters?.clientId) params.set('clientId', filters.clientId)
-  if (filters?.status)   params.set('status',   filters.status)
+export function useInvoices(params: { clientId?: string; status?: string; search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
   return useQuery<Invoice[]>({
-    queryKey: ['invoices', filters],
+    queryKey: ['invoices', params],
     queryFn:  async () => {
-      const res = await api.get(`/api/invoices?${params.toString()}`)
+      const res = await api.get('/api/invoices', { params })
       return res.data.data
     },
   })

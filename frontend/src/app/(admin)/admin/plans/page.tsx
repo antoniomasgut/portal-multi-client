@@ -179,10 +179,23 @@ function PlanForm({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
 
 export default function PlansPage() {
   const { t } = useTranslation('admin')
-  const { data: plans = [], isLoading } = usePlans()
+  const [search, setSearch]       = useState('')
+  const [sortBy, setSortBy]       = useState('priceMonthly')
+  const [sortDir, setSortDir]     = useState<'asc' | 'desc'>('asc')
+  
+  const { data: plans = [], isLoading } = usePlans({ search, sortBy, sortDir })
   const del = useDeletePlan()
   const [showForm, setShowForm] = useState(false)
   const [editPlan, setEditPlan] = useState<Plan | undefined>()
+
+  const toggleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortDir(sortDir === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortBy(field)
+      setSortDir('asc')
+    }
+  }
 
   const handleDelete = (p: Plan) => {
     if (window.confirm(t('plans.delete_confirm', { name: p.name }))) {
@@ -191,7 +204,7 @@ export default function PlansPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="p-6 max-w-5xl mx-auto animate-fade-in-up">
       <div className="flex justify-between items-start mb-8">
         <div>
           <p className="section-tag">{t('plans.tag')}</p>
@@ -201,15 +214,37 @@ export default function PlansPage() {
         <button className="btn-primary text-xs" onClick={() => setShowForm(true)}>{t('plans.new_plan')}</button>
       </div>
 
+      <div className="mb-4">
+        <input
+          className="form-input max-w-xs text-sm"
+          placeholder={t('clients.search_placeholder')}
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </div>
+
       {isLoading ? (
         <div className="bg-[var(--bg-2)] border border-[var(--border)] p-16 text-center">
           <p className="font-mono text-xs text-[var(--text-muted)] tracking-[4px] animate-pulse uppercase">{t('plans.loading')}</p>
         </div>
       ) : (
-        <div className="bg-[var(--bg-2)] border border-[var(--border)]">
+        <div className="bg-[var(--bg-2)] border border-[var(--border)] overflow-hidden">
           <div className="grid grid-cols-[1.5fr_1fr_2fr_1.5fr_auto] gap-4 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg-1)]">
-            {[t('plans.col_plan'), t('plans.col_price'), t('plans.col_limits'), t('plans.col_features'), t('plans.col_actions')].map(h => (
-              <p key={h} className="font-mono text-[9px] tracking-[3px] text-[var(--text-muted)] uppercase">{h}</p>
+            {[
+              { label: t('plans.col_plan'), key: 'name' },
+              { label: t('plans.col_price'), key: 'priceMonthly' },
+              { label: t('plans.col_limits'), key: '' },
+              { label: t('plans.col_features'), key: '' },
+              { label: t('plans.col_actions'), key: '' },
+            ].map(h => (
+              <button 
+                key={h.label}
+                className="font-mono text-[9px] tracking-[3px] text-[#FF6B00] uppercase text-left flex items-center gap-1"
+                onClick={() => h.key && toggleSort(h.key)}
+              >
+                {h.label}
+                {sortBy === h.key && <span className="text-[10px]">{sortDir === 'asc' ? '▲' : '▼'}</span>}
+              </button>
             ))}
           </div>
 

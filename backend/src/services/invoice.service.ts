@@ -29,15 +29,23 @@ async function calcDiscount(clientId: string, subtotal: number): Promise<number>
 
 // ── Servei ────────────────────────────────────────────────────────────
 export const invoiceService = {
-  async list(filters?: { clientId?: string; status?: string }) {
+  async list(params: { clientId?: string; status?: string; search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
+    const { search, sortBy = 'issueDate', sortDir = 'desc' } = params
+    
     return prisma.invoice.findMany({
       where: {
         deletedAt: null,
-        ...(filters?.clientId && { clientId: filters.clientId }),
-        ...(filters?.status   && { status: filters.status as any }),
+        ...(params.clientId && { clientId: params.clientId }),
+        ...(params.status   && { status: params.status as any }),
+        ...(search && {
+          OR: [
+            { number: { contains: search, mode: 'insensitive' } },
+            { client: { companyName: { contains: search, mode: 'insensitive' } } },
+          ],
+        }),
       },
       include: { client: { select: { companyName: true, contactEmail: true, nif: true, address: true } } },
-      orderBy: { issueDate: 'desc' },
+      orderBy: { [sortBy]: sortDir },
     })
   },
 

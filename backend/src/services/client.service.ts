@@ -13,9 +13,21 @@ const SUBSCRIPTION_INCLUDE = {
 } as const
 
 export const clientService = {
-  async list() {
+  async list(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
+    const { search, sortBy = 'createdAt', sortDir = 'desc' } = params
+    
     return prisma.client.findMany({
-      where:   { deletedAt: null },
+      where: {
+        deletedAt: null,
+        ...(search && {
+          OR: [
+            { companyName:  { contains: search, mode: 'insensitive' } },
+            { contactName:  { contains: search, mode: 'insensitive' } },
+            { contactEmail: { contains: search, mode: 'insensitive' } },
+            { domain:       { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      },
       include: {
         subscriptions: {
           where:   { status: 'ACTIVE' },
@@ -25,7 +37,9 @@ export const clientService = {
         },
         _count: { select: { users: true } },
       },
-      orderBy: [{ isTest: 'asc' }, { createdAt: 'desc' }],
+      orderBy: (sortBy === 'users' 
+        ? { users: { _count: sortDir } } 
+        : { [sortBy]: sortDir }) as any,
     })
   },
 
@@ -220,16 +234,26 @@ async function buildSubscriptionData(opts: {
 }
 
 export const planService = {
-  async list() {
+  async list(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
+    const { search, sortBy = 'priceMonthly', sortDir = 'asc' } = params
+
     return prisma.plan.findMany({
-      where:   { isActive: true },
+      where: {
+        isActive: true,
+        ...(search && {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { slug: { contains: search, mode: 'insensitive' } },
+          ],
+        }),
+      },
       include: {
         services: {
           include: { service: true },
           orderBy: { service: { name: 'asc' } } as any,
         },
       },
-      orderBy: { priceMonthly: 'asc' },
+      orderBy: { [sortBy]: sortDir },
     })
   },
 

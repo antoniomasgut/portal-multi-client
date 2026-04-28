@@ -18,9 +18,14 @@ export const listPlans = async (_req: Request, res: Response, next: NextFunction
 
 // ── Clients ──────────────────────────────────────────────────────────────
 
-export const listClients = async (_req: Request, res: Response, next: NextFunction) => {
+export const listClients = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const clients = await clientService.list()
+    const { search, sortBy, sortDir } = req.query
+    const clients = await clientService.list({ 
+      search:  search  as string, 
+      sortBy:  sortBy  as string, 
+      sortDir: sortDir as 'asc' | 'desc'
+    })
     res.json({ success: true, message: 'OK', data: clients })
   } catch (err) { next(err) }
 }

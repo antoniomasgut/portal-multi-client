@@ -3,22 +3,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../utils/api'
 import type { Service } from '../types'
 
-export function useServices() {
+export function useServices(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
   return useQuery<Service[]>({
-    queryKey: ['services'],
+    queryKey: ['services', params],
     queryFn:  async () => {
-      const res = await api.get('/api/services')
+      const res = await api.get('/api/services', { params })
       return res.data.data
     },
   })
 }
 
 /** Admin: inclou serveis inactius */
-export function useAllServices() {
+export function useAllServices(params: { search?: string; sortBy?: string; sortDir?: 'asc' | 'desc' } = {}) {
   return useQuery<Service[]>({
-    queryKey: ['services', 'all'],
+    queryKey: ['services', 'all', params],
     queryFn:  async () => {
-      const res = await api.get('/api/services/all')
+      const res = await api.get('/api/services/all', { params })
       return res.data.data
     },
   })

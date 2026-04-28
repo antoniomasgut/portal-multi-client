@@ -2,16 +2,26 @@ import { Request, Response, NextFunction } from 'express'
 import { serviceService } from '../services/service.service'
 import { createServiceSchema, updateServiceSchema } from '../schemas/service'
 
-export const listServices = async (_req: Request, res: Response, next: NextFunction) => {
+export const listServices = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const services = await serviceService.list()
+    const { search, sortBy, sortDir } = req.query
+    const services = await serviceService.list({ 
+      search:  search  as string, 
+      sortBy:  sortBy  as string, 
+      sortDir: sortDir as 'asc' | 'desc'
+    })
     res.json({ success: true, message: 'OK', data: services })
   } catch (err) { next(err) }
 }
 
-export const listAllServices = async (_req: Request, res: Response, next: NextFunction) => {
+export const listAllServices = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const services = await serviceService.listAll()
+    const { search, sortBy, sortDir } = req.query
+    const services = await serviceService.listAll({ 
+      search:  search  as string, 
+      sortBy:  sortBy  as string, 
+      sortDir: sortDir as 'asc' | 'desc'
+    })
     res.json({ success: true, message: 'OK', data: services })
   } catch (err) { next(err) }
 }
